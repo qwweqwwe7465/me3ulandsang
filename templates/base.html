@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Me3ul and sang!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="{% static 'css/styles.css' %}" rel="stylesheet">
+
+{% block extracss %}{% endblock extracss %}
+</head>
+<body>
+
+<div class="bg-ambient">
+  <div class="blob blob--1"></div>
+  <div class="blob blob--2"></div>
+  <div class="blob blob--3"></div>
+</div>
+
+<div class="nav-wrap">
+  <nav class="nav glass" id="nav">
+    <a class="brand" href="/"><span class="brand-mark"></span>me3ulandsang</a>
+
+    <ul class="nav-links">
+      <li><a href="/#charts">Charts</a></li>
+      <li><a href="/search?s=&type=playlists">Playlists</a></li>
+      <li><a href="/search?s">Browse</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+    {% if request.resolver_match.url_name not in 'search_view' %}
+    <div class="nav-search">
+      <form action="/search" name='search' method="GET" style="display:contents;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" name="s" placeholder="Search songs, artists, lyrics…" aria-label="Search your library">
+      </form>
+      
+    </div>
+    {% endif %}
+    {% comment %} <div class="nav-avatar" aria-hidden="true"></div> {% endcomment %}
+  </nav>
+</div>
+
+
+{% block content %}
+{% endblock content %}
+
+<footer class="footer shell">
+  <div>
+    <p class="footer__brand">me3ul and sang</p>
+    <p>sharing made easier.<br><br>
+      really?
+    </p>
+  </div>
+  <div class="footer__links">
+      <a href="/#charts">Charts</a>
+      <a href="/search?s=&type=playlists">Playlists</a>
+      <a href="/search?s">Browse</a>
+      <a href="/about">About</a>
+  </div>
+  <div>Honestly I dont know wtf Im doing at this point ©</div>
+</footer>
+
+</main>
+
+<div class="toast" id="toast">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastText">Done</span>
+</div>
+{% block extrajs %}{% endblock extrajs %}
+
+</body>
+</html>

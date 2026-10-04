@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ artist.name }} - Artist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="bg-ambient"><div class="blob blob--1"></div><div class="blob blob--2"></div></div>
+
+<main class="shell">
+
+  <!-- ARTIST HEADER -->
+  <section class="artist-header">
+    <div class="artist-photo"><img src="{{ artist.photo.url }}" style="width:100%;height:100%;object-fit:cover;"></div>
+
+    <div>
+      <p class="eyebrow artist-eyebrow">ARTIST</p>
+      <h1 class="artist-name">{{ artist.name }}</h1>
+
+      <div class="genre-row">
+        {% for genre in artist.genres.all %}
+        <span class="genre-tag glass">{{ genre.name }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="stats-row">
+        <span class="stat-pill glass">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="4" height="13" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="17" y="11" width="4" height="10" rx="1"/></svg>
+          {{ album_count }} album{{ album_count|pluralize }}
+        </span>
+        <span class="stat-pill glass">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          {{ track_count }} track{{ track_count|pluralize }} logged
+        </span>
+        <span class="stat-pill glass">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          {{ total_views|intcomma }} views
+        </span>
+      </div>
+
+      <p class="description-text">{{ artist.description }}</p>
+    </div>
+  </section>
+
+  <!-- TOP SONGS -->
+  {% if top_tracks %}
+  <section class="section">
+    <div class="section__head">
+      <h2 class="section__title">Top songs</h2>
+      <span class="section__hint">Most liked</span>
+    </div>
+    <div class="song-list">
+      {% for track in top_tracks %}
+      <a href="{% url 'single_track_view' track.id %}" class="song-row">
+        <span class="song-rank">{{ forloop.counter|stringformat:"02d" }}</span>
+        <span class="song-cover"><img src="{{ track.cover.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+        <span class="song-title">{{ track.title }}</span>
+        <span class="song-stat">{{ track.likes|intcomma }} likes</span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ALBUMS -->
+  {% if albums %}
+  <section class="section">
+    <div class="section__head">
+      <h2 class="section__title">Albums</h2>
+      <span class="section__hint">{{ album_count }} total</span>
+    </div>
+    <div class="album-grid">
+      {% for album in albums %}
+      <a href="{% url 'album_view' album.id %}" class="album-card glass">
+        <div class="album-card-cover"><img src="{{ album.albumr.all.first.track.cover.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></div>
+        <p class="album-card__title">{{ album.name }}</p>
+        <p class="album-card__meta">{{ album.release_date|date:'Y' }} - {{ album.tracks.count }} tracks</p>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+
+
+</body>
+</html>
+
+{% endblock content %}
+
+{% block extracss %}<link rel="stylesheet" href="{% static "css/artist.css" %}">{% endblock extracss %}

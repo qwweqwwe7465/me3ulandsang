@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Crate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="about.css">
+</head>
+<body>
+
+<div class="bg-ambient">
+  <div class="blob blob--1"></div>
+  <div class="blob blob--2"></div>
+  <div class="blob blob--3"></div>
+</div>
+
+<main class="shell">
+
+  <section class="page-hero">
+    <p class="eyebrow">ABOUT</p>
+    <h1 class="page-hero__title">Built to catalouge my everyday ear cocaine</h1>
+    <p class="page-hero__sub">this website aims to help you find the music you like easier with less pain.</p>
+  </section>
+
+  <section class="stats">
+    <div class="stat glass"><div class="stat__num">{{ songs_count }}</div><div class="stat__label">Songs logged</div></div>
+    <div class="stat glass"><div class="stat__num">{{ playlists_count }}</div><div class="stat__label">Playlists built</div></div>
+    <div class="stat glass"><div class="stat__num">{{ lyrics_count }}</div><div class="stat__label">Lyrics saved</div></div>
+    <div class="stat glass"><div class="stat__num">{{ genres_count }}</div><div class="stat__label">Genres tagged</div></div>
+  </section>
+
+  <section class="content-card glass">
+    <p class="eyebrow content-card__eyebrow">WHY ME3UL AND SANG EXISTS</p>
+    <p>This started as a passion project i made to learn a bit more about Django basics but spiraled into a whole-ass website. there are a lot of features i still want to add but there is no guarantee as to when I'll add them because this is a non-profit website and my lazy ass cannot be bothered.<br> thanks for your understanding 🙏</p>
+    <p>Also there is no guarantee that this website will be up in the feauture(depends on the feedback I get)</p>
+  </section>
+
+  <section class="content-card glass">
+    <p class="eyebrow content-card__eyebrow">FAQ:</p>
+    <ul class="isnt-list">
+      <li>Did you use AI making this? <br><br> Yes. AI wrote 80% of the front end and about 20% of the backend so you could say I did the back end and the AI did the front end</li>
+      <li>What framework did you ues for this website <br><br> I used django for the backend and claude sonnet 5 to make all of the templates and javascript logic</li>
+
+    </ul>
+  </section>
+
+  <section class="contact-layout">
+    <div class="contact-card glass">
+      <p class="eyebrow content-card__eyebrow">GET IN TOUCH</p>
+      <h2 class="content-card__title" style="margin-bottom:0;">Say hello</h2>
+      <div class="contact-email-row">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21.05 3.35 2.9 10.53c-1.23.5-1.22 1.2-.22 1.5l4.63 1.45 1.79 5.5c.22.6.36.84.75.84.3 0 .43-.14.6-.3l2.6-2.5 4.7 3.47c.87.48 1.5.24 1.72-.8l3.1-14.6c.32-1.28-.48-1.86-1.52-1.44Zm-11.9 10.7-1.06 3.86-.63-3.95 9.6-8.6c.35-.3-.08-.47-.53-.17l-11.86 7.47-2.02-.64Z"/></svg>
+        <a href="https://t.me/tabooed">@taboooed</a>
+      </div>
+      <p class="contact-note">Questions, feedback, or just want to say hi — I read everything.</p>
+    </div>
+
+    <div class="form-card glass">
+      <p class="eyebrow content-card__eyebrow">GOT AN IDEA?</p>
+      <h2 class="content-card__title">Send a suggestion</h2>
+      <form id="suggestionForm" method="POST" action="">
+        {% csrf_token %}
+        <div class="field-row">
+          <div class="field">
+            <label for="suggName">Name (optional)</label>
+            <input type="text" id="suggName" name="name" placeholder="Your name">
+          </div>
+          <div class="field">
+            <label for="suggEmail">Email (optional)</label>
+            <input type="email" id="suggEmail" name="email" placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="field">
+          <label for="suggText">Your suggestion</label>
+          <textarea id="suggText" name="description" placeholder="e.g. It'd be great to sort playlists by mood" required></textarea>
+        </div>
+        <button type="submit" class="btn btn--primary btn--full">Send Suggestion</button>
+      </form>
+    </div>
+  </section>
+
+
+
+
+<div class="toast" id="toast">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastText">Done</span>
+</div>
+
+
+
+</body>
+</html>
+{% endblock content %}
+
+{% block extrajs %}
+<script>window.SUGGESTION_SUBMITTED = {% if submitted %}true{% else %}false{% endif %};</script>
+<script src="{% static "js/about.js" %}"></script>
+{% endblock extrajs %}
+
+{% block extracss %}<link rel="stylesheet" href="{% static "css/about.css" %}">{% endblock extracss %}

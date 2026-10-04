@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+{% load tags %}
+{% block content %}
+
+
+<main class="shell">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <p class="eyebrow" style="margin-bottom:20px;">some dude's personal library</p>
+      <h1 class="hero__title">Listen to music<br>AD-less and <em>free</em></h1>
+      <p class="hero__sub">this is a personal library of me logging every music i listen to. a passion project solely fuled by persistence( and beaing an annoying person)</p>
+      <div class="hero__ctas">
+        
+        <button class="btn btn--primary" id="openLogBtn">
+          <a href='./search?s='>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.9"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search the library
+        </button>
+        <a href="#charts" class="btn btn--ghost">Explore Charts</a>
+      </div>
+    </div>
+
+    <div class="cover-collage" aria-hidden="true">
+      <img class='THE_LOGO' src='{% static 'img/logo lowr.png' %}'>
+    </div>
+  </section>
+
+  <!-- FEATURE STRIP -->
+  <section class="feature-strip" id='charts'>
+    <div class="feature-pill glass">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>I add shit whenever I want</span>
+    </div>
+    <div class="feature-pill glass">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <span>Includes custom playlists</span>
+    </div>
+    <div class="feature-pill glass">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19v3M8 22h8"/><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"/><path d="M19 10a7 7 0 0 1-14 0"/></svg>
+      <span>Lyrics on most tracks</span>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats" >
+    <div class="stat glass"><div class="stat__num">{{tracks.count}}</div><div class="stat__label">Songs logged</div></div>
+    <div class="stat glass"><div class="stat__num">{{playlist_count}}</div><div class="stat__label">Playlists built</div></div>
+    <div class="stat glass"><div class="stat__num">{{lyrcount}}</div><div class="stat__label">Lyrics saved</div></div>
+    <div class="stat glass"><div class="stat__num">{{ genres.count }}</div><div class="stat__label">Genres tagged</div></div>
+  </section>
+
+  <!-- TOP SONGS -->
+<section class="section-reveal" >
+    <div class="section__head">
+      <h2 class="section__title">The top songs</h2>
+      <span class="section__hint">Most Liked</span>
+    </div>
+    {% for track in toptracks %}
+  <a class="chart-row glass" href="/track/{{track.id}}" aria-label="{{ track.title }} by {{ track.clean_artists }}">
+    <span class="chart-rank mono">{{ forloop.counter|stringformat:"02d" }}</span>
+    <span class="chart-cover">
+      <img src="{{ track.cover.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">{{ track.title }}</span>
+      <span class="chart-artist" style="display:block;">{{ track.clean_artists }}</span>
+    </span>
+    {% if track.has_lyrics %}<span class="chart-lyrics"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19v3M8 22h8"></path><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"></path><path d="M19 10a7 7 0 0 1-14 0"></path></svg><span style="font-size:11px;">has lyrics</span></span>{% endif %}
+    <span class="chart-logs">{{ track.likes }}</span>
+  </a>
+    {% endfor %}
+  </section>
+
+<!-- RECENTLY LOGGED -->
+<section class="section-reveal">
+  <div class="section__head">
+    <h2 class="section__title">Recently logged</h2>
+    <span class="section__hint">The latest entries</span>
+  </div>
+  <div class="recent-row" id="recentRow">
+    {% for track in agotracks %}
+    <a class="recent-card glass" href='/track/{{track.id}}'>
+      <span class="recent-cover"><img src="{{ track.cover.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">{{track.title}}</span>
+        <span class="recent-meta">{{ track.date_added|timesince}}</span>
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+  </section>
+
+
+
+  <!-- PLAYLISTS -->
+<section class="section-reveal" id="playlists">
+  <div class="section__head">
+    <h2 class="section__title"><br>Top playlists</h2>
+    <span class="section__hint"><a href='/search?s=&type=playlists'>see all</a></span>
+  </div>
+
+  <div class="playlist-grid" id="playlistGrid">
+    {% for playlist in playlists %}
+    <a href='playlist/{{playlist.id}}'>
+      <div class="playlist-card glass">
+        <div class="playlist-thumb">
+          <img src='{{ playlist|coverselection:1 }}'>
+          <img src='{{ playlist|coverselection:2 }}'>
+          <img src='{{ playlist|coverselection:3 }}'>
+          <img src='{{ playlist|coverselection:4 }}'>
+        </div>
+        <p class="playlist-title">{{ playlist }}</p>
+        <p class="playlist-meta">
+          {% for genre in playlist.genres.all %}{{ genre }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </p>
+        <p class="playlist-updated">Updated {{ playlist.date_updated|timesince }} ago</p>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+
+
+  <!-- BROWSE BY GENRE -->
+<section class="section reveal" id="browse">
+  <div class="section__head">
+    <h2 class="section__title">Browse by genre</h2>
+    <span class="section__hint">{{ genres.count }} total</span>
+  </div>
+  <div class="genre-grid" id="genreGrid">
+    {% for genre in genres %}
+    <a href='search?genre={{genre}}'>
+    <div class="genre-tile glass {% if forloop.counter > 6 %}genre-tile--hidden{% endif %}" style="--tint:var(--violet); position:relative; overflow:hidden;">
+      {% if genre.top_track %}
+        <div style="position:absolute; inset:0; background-image:url('{{ genre.top_track.cover.url }}'); background-size:cover; background-position:center; filter:blur(2px); opacity:0.4; z-index:0;"></div>
+      {% endif %}
+      <p class="genre-tile__title" style="position:relative; z-index:1;">{{ genre }}</p>
+      <p class="genre-tile__count" style="position:relative; z-index:1;">{{ genre.rel_track.count }} tracks</p>
+    </div>
+  </a>
+    {% endfor %}
+  </div>
+  {% if genres.count > 6 %}
+    <button id="genreMoreBtn" class="btn btn--ghost" style="margin-top:16px;">Show more</button>
+  {% endif %}
+</section>
+
+  <!-- CTA -->
+  {% comment %} <section class="cta-banner glass">
+    <h2>Got a song stuck in your head?</h2>
+    <p>Log it before you forget the hook.</p>
+    <button class="btn btn--primary" style="margin:0 auto;" id="openLogBtn2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Log a Track
+    </button>
+  </section> {% endcomment %}
+
+
+
+{% endblock content %}
+{% block extrajs %}<script src="{% static 'js/script.js' %}"></script>{% endblock extrajs %}
+{% block extracss %}<link rel="stylesheet" href="{% static "css/styles.css" %}">{% endblock extracss %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load tags %}
+
+{% load static %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Late Night Drives — Playlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="bg-ambient"><div class="blob blob--1"></div><div class="blob blob--2"></div></div>
+
+<main class="shell">
+
+  <!-- PLAYLIST HEADER -->
+  <section class="playlist-header">
+    <div class="cover-collage" aria-label="Playlist cover, built from the first four tracks">
+                <img src="{{ playlist|coverselection:1 }}" alt="{{ playlist.name }} Cover 1">
+                <img src="{{ playlist|coverselection:2 }}" alt="{{ playlist.name }} Cover 2">
+                <img src="{{ playlist|coverselection:3 }}" alt="{{ playlist.name }} Cover 3">
+                <img src="{{ playlist|coverselection:4 }}" alt="{{ playlist.name }} Cover 4">
+    </div>
+
+    <div>
+      <p class="eyebrow playlist-eyebrow">PLAYLIST</p>
+      <h1 class="playlist-title">{{playlist.name}}</h1>
+
+      <div class="genre-row">
+        {% for genre in playlist.genres.all %}
+        <span class="genre-tag glass">{{genre}}</span>
+        {% endfor %}
+      </div>
+
+      <div class="stats-row">
+        {% csrf_token %}
+        <span class="stat-pill glass">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span id="viewCount">{{playlist.views|intcomma}} views</span>
+        </span>
+        <button class="like-btn glass{% if is_liked %} is-liked{% endif %}" id="likeBtn" data-track-id="{{ playlist.id }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          <span id="likeCount" data-base-likes="{{ playlist.likes }}">{{playlist.likes}}</span>
+        </button>
+      </div>
+
+      <p class="description-text">{{playlist.description}}</p>
+    </div>
+  </section>
+
+  <!-- TRACKLIST -->
+  <div class="content-card glass">
+    <div class="content-card__head">
+      <h2 class="content-card__title">Tracklist</h2>
+      <span class="eyebrow">{{relations.count}} tracks</span>
+    </div>
+    {% for relation in relations %}
+    <a href='/track/{{relation.track.id}}'>
+    <div class="tracklist">
+      <div class="tracklist-row">
+        <span class="tracklist-num">{{relation.order}}</span>
+        <span class="tracklist-info">
+          <span class="tracklist-title">{{relation.track}}</span>
+          <span class="tracklist-artist">{{relation.track.clean_artists}}</span>
+        </span>
+      </div>
+    </a>
+      {% endfor %}
+  
+
+
+</body>
+</html>
+{% endblock content %}
+
+{% block extracss %}<link rel="stylesheet" href="{% static "css/playlist.css" %}">{% endblock extracss %}
+
+{% block extrajs %}
+  <script src="{% static 'js/playlist.js' %}"></script>
+  {% endblock extrajs %}

@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<main class="shell">
+
+  <header class="form-header">
+    <p class="eyebrow">ADD TO THE CRATE</p>
+    <h1 class="form-title">Log a track</h1>
+    <p class="form-lede">Fill it in by hand and press Save Track — this posts straight to the database.</p>
+  </header>
+
+  <form method="POST" enctype="multipart/form-data" action="">
+    {% csrf_token %}
+
+    <div class="form-layout">
+      <div>
+
+        {% if form.errors %}
+          <div class="banner banner--err">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16.5" x2="12" y2="16.6"/></svg>
+            <span>
+              Some fields need another look before this track can be saved.
+              <ul class="errorlist">
+                {% for field in form %}
+                  {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                  {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            </span>
+          </div>
+        {% endif %}
+
+        <!-- THE BASICS -->
+         
+            <section class="dropzone-card glass" id="mp3-drop-card">
+  <p class="eyebrow form-card__eyebrow">Audio Import</p>
+  <h3 class="dropzone-card__title">Extract metadata from MP3</h3>
+  <p class="dropzone-card__sub">Drop a track below and we'll read its ID3 tags — title, artist, album, duration and cover art.</p>
+
+  <label class="dropzone" id="mp3-dropzone" for="mp3-input">
+    <input type="file" id="mp3-input" accept=".mp3,audio/mpeg" hidden>
+    <svg class="dropzone__icon" width="34" height="34" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+    </svg>
+    <p class="dropzone__text">Drag &amp; drop your MP3 here</p>
+    <p class="dropzone__hint">or <span>browse files</span> — MP3 only, max 25 MB</p>
+    <p class="dropzone__file mono" id="mp3-filename" hidden></p>
+  </label>
+
+  <div class="dropzone-actions">
+    <button type="button" class="btn btn--primary" id="extract-btn" disabled>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Extract data
+    </button>
+    <p class="import-note">Extracted fields will pre-fill the form. You can edit everything afterwards.</p>
+  </div>
+</section>
+
+
+
+
+        <section class="form-card glass">
+          <div class="form-card__head">
+            <h2 class="form-card__title">The basics</h2>
+            <span class="eyebrow">REQUIRED</span>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="id_title">Title<span class="req">*</span></label>
+            <input type="text" name="title" id="id_title" placeholder="Track title" value="{{ form.title.value|default:'' }}" required>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="artist-search">Primary artist</label>
+              <div class="combo" data-combo="artist" data-multi="false" data-initial="{{ initial_artist_id|default:'' }}">
+                <input type="text" class="combo__input" id="artist-search" placeholder="Type to search artists..." autocomplete="off">
+                <input type="hidden" name="artist" class="combo__value" value="{{ initial_artist_id|default:'' }}">
+                <div class="combo__panel" hidden></div>
+              </div>
+              <p class="field__hint">Not in the list yet? Add the artist first, then come back.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="id_release_date">Release date</label>
+              <input type="date" name="release_date" id="id_release_date" value="{{ form.release_date.value|date:'Y-m-d'|default:'' }}">
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="featured-search">Featured artists</label>
+            <div class="combo" data-combo="featured_artist" data-multi="true" data-initial="{{ initial_featured_ids }}">
+              <div class="combo__chips" id="featured_artist-chips"></div>
+              <input type="text" class="combo__input" id="featured-search" placeholder="Type to search and add..." autocomplete="off">
+              <div class="combo__panel" hidden></div>
+            </div>
+            <p class="field__hint">Pick as many as apply. Leave empty if there are none.</p>
+          </div>
+
+          <div class="field">
+            <label class="field__label">Genres<span class="req">*</span></label>
+            <div class="genre-checks">
+              {% for genre in genres %}
+                <label class="genre-check">
+                  <input type="checkbox" name="genres" value="{{ genre.id }}" {% if genre.id in selected_genre_ids %}checked{% endif %}>
+                  <span>{{ genre.name }}</span>
+                </label>
+              {% empty %}
+                <p class="field__hint">No genres yet.</p>
+              {% endfor %}
+            </div>
+          </div>
+        </section>
+
+        <!-- ALBUM PLACEMENT -->
+        <section class="form-card glass">
+          <div class="form-card__head">
+            <h2 class="form-card__title">Album placement</h2>
+            <span class="eyebrow">OPTIONAL</span>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="field__label" for="album-search">Album</label>
+              <div class="combo" data-combo="album" data-multi="false" data-initial="{{ initial_album_id|default:'' }}">
+                <input type="text" class="combo__input" id="album-search" placeholder="Type to search albums..." autocomplete="off">
+                <input type="hidden" name="album" class="combo__value" value="{{ initial_album_id|default:'' }}">
+                <div class="combo__panel" hidden></div>
+              </div>
+              <p class="field__hint">Leave empty for a standalone, non-album track.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="id_album_order">Track order in album</label>
+              <input type="number" name="album_order" id="id_album_order" min="1" step="1" placeholder="e.g. 3" value="{{ initial_album_order|default:'' }}">
+              <p class="field__hint">Position of this track on the album's tracklist.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ARTWORK -->
+        <section class="form-card glass">
+          <div class="form-card__head">
+            <h2 class="form-card__title">Artwork</h2>
+            <span class="eyebrow">OPTIONAL</span>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="id_cover">Cover image</label>
+            <input type="file" name="cover" id="id_cover" accept="image/*">
+            <p class="field__hint">Leave empty and the track falls back to default-cover.png.</p>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="id_audio_file">Audio file</label>
+            <input type="file" name="audio_file" id="id_audio_file" accept=".mp3,audio/mpeg">
+            <p class="field__hint">Optional — store the actual MP3 alongside the track's metadata.</p>
+          </div>
+        </section>
+
+        <!-- WORDS -->
+        <section class="form-card glass">
+          <div class="form-card__head">
+            <h2 class="form-card__title">Words</h2>
+            <span class="eyebrow">DESCRIPTION &amp; LYRICS</span>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="id_description">Description</label>
+            <textarea name="description" id="id_description" placeholder="A few lines about the track...">{{ form.description.value|default:'' }}</textarea>
+          </div>
+
+          <div class="field">
+            <div class="check-field">
+              <input type="checkbox" name="has_lyrics" id="id_has_lyrics" {% if form.has_lyrics.value %}checked{% endif %}>
+              <label class="check-field__text" for="id_has_lyrics">
+                This track has lyrics
+                <span>Tick it and the lyrics below get shown on the track page.</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="id_lyrics">Lyrics</label>
+            <textarea name="lyrics" id="id_lyrics" class="lyrics-input" placeholder="Paste or type lyrics here...">{{ form.lyrics.value|default:'' }}</textarea>
+            <p class="field__hint">Line breaks are kept exactly as you type them.</p>
+          </div>
+        </section>
+
+        <div class="form-actions glass">
+          <button type="submit" name="action" value="save" class="btn btn--primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Save Track
+          </button>
+          <a href="/search" class="btn btn--ghost">Cancel</a>
+          <span class="form-actions__note">Views, likes and date added are handled for you.</span>
+        </div>
+
+      </div>
+
+      <aside class="sidebar">
+        <div class="sidebar-card glass">
+          <p class="sidebar-card__title">Filled in automatically</p>
+          <div class="auto-field"><code>views</code><span>starts at 0</span></div>
+          <div class="auto-field"><code>likes</code><span>starts at 0</span></div>
+          <div class="auto-field"><code>date_added</code><span>set on save</span></div>
+          <div class="auto-field"><code>cover</code><span>default-cover.png</span></div>
+        </div>
+
+        <div class="sidebar-card glass">
+          <p class="sidebar-card__title">Debug: context wiring</p>
+          <p class="field__hint">Artists loaded: <strong>{{ artist_list|length }}</strong> &middot; Albums loaded: <strong>{{ album_list|length }}</strong></p>
+          <p class="field__hint">These counts confirm the view is passing the search data down to this page.</p>
+        </div>
+      </aside>
+    </div>
+  </form>
+
+</main>
+
+{{ artist_list|json_script:"artist-data" }}
+{{ album_list|json_script:"album-data" }}
+
+{% endblock content %}
+
+{% block extracss %}
+                    <link rel="stylesheet" href="{% static 'css/track_form.css' %}">
+                    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+                    <link rel="stylesheet" href="{% static 'css/track_form_combo.css' %}">
+{% endblock extracss %}
+
+{% block extrajs %}
+  <script src="{% static 'js/track_form_combo.js' %}"></script>
+{% endblock extrajs %}

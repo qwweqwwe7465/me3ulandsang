@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+*.egg-info/
+
+# Django
+db.sqlite3
+*.log
+media/
+
+# Secrets / env files
+.env
+*.env
+
+# Random leftover files spotted in your repo
+static_src/admin.zip
+static_src/nem.zip
+static_src/static_src
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+*.swp
+
+passenger_wsgi.py
+passenger_wsgi.py

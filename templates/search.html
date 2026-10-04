@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load tags %}
+{% load static %} 
+{% block content %}
+
+<main class="shell">
+  <section class="page-hero">
+    <p class="eyebrow">SEARCH THE LIBRARY</p>
+    <h1 class="page-hero__title">
+      Look Up Songs, Playlists, Artists & Albums
+    </h1>
+    <p class="page-hero__sub">
+        There is something here for everyone. If you look long enough
+    </p>
+
+    <form action="/search" name="search" method="GET" class="search-hero-input glass">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="11" cy="11" r="7" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="text"
+        name="s"
+        value="{{ req_text }}"
+        placeholder="Search songs, artists, lyrics…"
+        aria-label="Search your library"
+      />
+    </form>
+    
+    {% comment %} this is the filter button section {% endcomment %}
+    <div class="tab-row" id="tabRow">
+      <a href="{% url_replace type='all' %}">
+        <button class="tab {% if current_type == 'all' %}is-active{% endif %}" data-type="all">All</button>
+      </a>
+      <a href="{% url_replace type='tracks' %}">
+        <button class="tab {% if current_type == 'tracks' %}is-active{% endif %}" data-type="tracks">Tracks</button>
+      </a>
+      <a href="{% url_replace type='albums' %}">
+        <button class="tab {% if current_type == 'albums' %}is-active{% endif %}" data-type="album">Albums</button>
+      </a>
+      <a href="{% url_replace type='playlists' %}">
+        <button class="tab {% if current_type == 'playlists' %}is-active{% endif %}" data-type="playlist">Playlists</button>
+      </a>
+      <a href="{% url_replace type='artists' %}">
+        <button class="tab {% if current_type == 'artists' %}is-active{% endif %}" data-type="artist">Artists</button>
+      </a>
+    </div>
+    <div class="genre-filter">
+  <label for="genreSelect" class="eyebrow">GENRE</label>
+<form method="get" action="/search">
+   
+
+<select
+    name="genre"
+    onchange="window.location.search = this.value;"
+>
+    <option
+        value="{% url_replace genre='' %}"
+        {% if not request.GET.genre %}selected{% endif %}
+    >
+        All Genres
+    </option>
+
+    {% for genre in genres %}
+        <option
+            value="{% url_replace genre=genre.name %}"
+            {% if request.GET.genre == genre.name %}selected{% endif %}
+        >
+            {{ genre.name }}
+        </option>
+    {% endfor %}
+</select>
+</form>
+</div>
+  </section>
+
+  <section class="search-layout">
+    <div>
+      <div class="results-head">
+        <span class="eyebrow" id="resultsLabel">RESULTS</span>
+        <span class="results-count" id="resultsCount">{{ result_count }} result{{ result_count|pluralize }}</span>
+      </div>
+      <div class="results-feed" id="resultsFeed">
+        {% if current_type == 'all' or current_type == 'tracks' %}
+        {% for track in tracks %}
+        <a href="{% url 'single_track_view' track.id %}">
+          <article class="result-card glass">
+            <img
+              class="result-cover result-cover--single"
+              src="{{ track.cover.url }}"
+            >
+            <div class="result-main">
+              <span class="result-tag result-tag--song">Track</span>
+              <h3 class="result-title">{{ track.title }}</h3>
+              <p class="result-subtitle">{{ track.clean_artists }}</p>
+              <p class="result-blurb">
+                {{ track.description|truncatewords:15 }}
+              </p>
+            </div>
+            <div class="result-side">
+              <span class="result-stat">{{ track.views }} views</span>
+            </div>
+          </article>
+        </a>
+        {% empty %}
+        {% if current_type == 'tracks' %}
+        <p class="empty-hint">No tracks found.</p>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        {% if current_type == 'all' or current_type == 'albums' %}
+        {% for album in albums %}
+        <a href="{% url 'album_view' album.id %}">
+          <article class="result-card glass">
+            <img
+              class="result-cover result-cover--single"
+              src="{{ album.tracks.first.cover.url }}"
+            >
+            <div class="result-main">
+              <span class="result-tag result-tag--album">Album</span>
+              <h3 class="result-title">{{ album.name }}</h3>
+              <p class="result-subtitle">{{ album.tracks.count }} tracks</p>
+              <p class="result-blurb">
+                {{ album.description|truncatewords:15 }}
+              </p>
+            </div>
+            <div class="result-side">
+              <span class="result-stat">{{ album.tracks.count }} tracks</span>
+            </div>
+          </article>
+        </a>
+        {% empty %}
+        {% if current_type == 'albums' %}
+        <p class="empty-hint">No albums found.</p>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        {% if current_type == 'all' or current_type == 'playlists' %}
+        {% for playlist in playlists %}
+        <a href="{% url 'playlist_view' playlist.id %}">
+          <article class="result-card glass">
+            <div class="result-cover result-cover--playlist">
+              <img src="{{ playlist|coverselection:1 }}" alt="{{ playlist.name }} Cover 1">
+              <img src="{{ playlist|coverselection:2 }}" alt="{{ playlist.name }} Cover 2">
+              <img src="{{ playlist|coverselection:3 }}" alt="{{ playlist.name }} Cover 3">
+              <img src="{{ playlist|coverselection:4 }}" alt="{{ playlist.name }} Cover 4">
+            </div>
+            <div class="result-main">
+              <span class="result-tag result-tag--playlist">Playlist</span>
+              <h3 class="result-title">{{ playlist.name }}</h3>
+              <p class="result-subtitle">
+                {% for genre in playlist.genres.all %}
+                  {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </p>
+              <p class="result-blurb">
+                {{ playlist.description|truncatewords:15 }}
+              </p>
+            </div>
+            <div class="result-side">
+              <span class="result-stat">{{ playlist.tracks.count }} tracks</span>
+            </div>
+          </article>
+        </a>
+        {% empty %}
+        {% if current_type == 'playlists' %}
+        <p class="empty-hint">No playlists found.</p>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        {% if current_type == 'all' or current_type == 'artists' %}
+        {% for artist in artists %}
+        <a href="{% url 'artist_view' artist.id %}">
+          <article class="result-card glass">
+            <img src="{{ artist.photo.url }}"
+              class="result-cover result-cover--artist"
+            >
+            <div class="result-main">
+              <span class="result-tag result-tag--artist">Artist</span>
+              <h3 class="result-title">{{ artist.name }}</h3>
+              <p class="result-subtitle">
+                {% for genre in artist.genres.all %}
+                  {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+              </p>
+              <p class="result-blurb">
+                {{ artist.description|truncatewords:15 }}
+              </p>
+            </div>
+            <div class="result-side">
+              <span class="result-stat">{{ artist.track_count }} tracks</span>
+            </div>
+          </article>
+        </a>
+        {% empty %}
+        {% if current_type == 'artists' %}
+        <p class="empty-hint">No artists found.</p>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="sidebar-card glass">
+        <p class="sidebar-card__title">Top Artists</p>
+        <div id="topArtists">
+          {% for artist in top_artists %}
+          <a href="{% url 'artist_view' artist.id %}" class="artist-mini">
+            <span class="artist-mini__avatar" style="background-image:url('{{ artist.photo.url }}');background-size:cover;background-position:center;"></span>
+            <span class="artist-mini__info">
+              <span class="artist-mini__name">{{ artist.name }}</span>
+              <span class="artist-mini__meta">{{ artist.track_count }} track{{ artist.track_count|pluralize }}</span>
+            </span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="sidebar-card glass">
+        <p class="sidebar-card__title">Top Songs</p>
+        <div id="topSongs">
+          {% for song in top_songs %}
+          <a href="{% url 'single_track_view' song.id %}" class="mini-chart-row">
+            <span class="mini-chart-rank">{{ forloop.counter }}</span>
+            <span class="mini-chart-cover" style="background-image:url('{{ song.cover.url }}');background-size:cover;"></span>
+            <span class="mini-chart-info">
+              <span class="mini-chart-title">{{ song.title }}</span>
+              <span class="mini-chart-artist">{{ song.clean_artists }}</span>
+            </span>
+            <span class="mini-chart-logs">{{ song.views }}</span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="sidebar-card glass">
+        <p class="sidebar-card__title">Found a bug or have suggestions?</p>
+        <p class="sidebar-card__hint">
+          give me a quick feedback 
+        </p>
+                <form id="bugForm" method="POST" action="">
+                  {% csrf_token %}
+                  <div class="field">
+                    <label for="bugDetails">What happened?</label>
+                    <textarea
+                      id="bugDetails"
+                      name="description"
+                      placeholder="e.g. your site is amazing keep up the great work"
+                      required
+                    ></textarea>
+                  </div>
+                  <div class="field">
+                    <label for="name">Name (optional)</label>
+                    <input type="text" id="bugEmail" name="name" placeholder="donutglazer2000" />
+                  </div>
+                  <button type="submit" class="btn btn--primary btn--full">
+                    Send feedback
+                  </button>
+                </form>
+
+      </div>
+    </aside>
+  </section>
+
+  {% endblock content %} {% block extrajs %}
+  <script src="{% static 'js/search.js' %}"></script>
+  {% endblock extrajs %} {% block extracss %}<link
+    rel="stylesheet"
+    href="{% static 'css/search.css' %}"
+  />{% endblock extracss %}
+

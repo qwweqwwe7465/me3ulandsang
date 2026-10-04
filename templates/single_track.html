@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{track}} - {{track.clean_artists}}</title>
+</head>
+<body>
+
+<div class="bg-ambient">
+  <div class="blob blob--1"></div>
+  <div class="blob blob--2"></div>
+  <div class="blob blob--3"></div>
+</div>
+
+<main class="shell">
+
+  <!-- TRACK HEADER -->
+  <section class="track-header">
+
+    <div class="track-cover-large"><img class="track-cover-large" src='{{track.cover.url}}'></div>
+    <div>
+      {% if album %}
+      <a href="#" class="track-album-link">
+        <span class="track-album-thumb" style="background:linear-gradient(135deg,var(--scarlet),var(--maroon));"></span>
+        <span class="eyebrow">FROM THE ALBUM: {{ album.name }}</span>
+      </a>
+      {% else %}
+      <span class="eyebrow">SINGLE</span>
+      {% endif %}
+      <h1 class="track-title">{{track}}</h1>
+
+      <div class="track-artists">
+        {% if track.artist %}
+        <a href="/artist/{{track.artist.id}}" class="artist-chip glass">
+          <span><img class="artist-chip__avatar" src='{{track.artist.photo.url}}'></span>
+          <span class="artist-chip__name">{{ track.artist.name }}</span>
+        </a>
+        {% endif %}
+        {% for artist in track.featured_artist.all %}
+        <a href="#" class="artist-chip glass">
+          <span><img class="artist-chip__avatar" src='{{ artist.photo.url }}'></span>
+          <span class="artist-chip__name">{{ artist.name }}</span>
+        </a>
+        {% endfor %}
+      </div>
+
+      {% if track.audio_file %}
+      <section class="content-card glass player-card">
+        <audio id="trackAudio" src="{{ track.audio_file.url }}" preload="metadata"></audio>
+        <div class="player">
+          <button class="player-play" id="playBtn" aria-label="Play track">
+            <svg class="icon-play" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg class="icon-pause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 5h4v14H6zM14 5h4v14h-4z"/>
+            </svg>
+          </button>
+          <div class="player-progress">
+            <span class="player-time mono" id="currentTime">0:00</span>
+            <div class="player-bar" id="progressBar">
+              <div class="player-bar__fill" id="progressFill"></div>
+            </div>
+            <span class="player-time mono player-time--end" id="durationTime">0:00</span>
+          </div>
+          <a href="{{ track.audio_file.url }}" download class="player-download" aria-label="Download track">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/>
+            </svg>
+          </a>
+        </div>
+      </section>
+      {% endif %}
+
+      <div class="track-stats-row">
+        {% csrf_token %}
+        <span class="stat-pill glass">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span id="viewCount">{{track.views|intcomma}} views</span>
+        </span>
+        <button class="like-btn glass{% if is_liked %} is-liked{% endif %}" id="likeBtn" data-track-id="{{ track.id }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          <span id="likeCount" data-base-likes="{{ track.likes }}">{{track.likes}}</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRACK LAYOUT -->
+  <div class="track-layout">
+
+    <!-- MAIN CONTENT COLUMN -->
+    <div>
+      {% if track.description %}
+      <div class="content-card glass">
+        <p class="eyebrow content-card__eyebrow">ABOUT THIS TRACK</p>
+        <p class="description-text">{{track.description}}</p>
+      </div>
+      {% endif %}
+
+      {% if track.lyrics %}
+      <div class="content-card glass">
+        <p class="eyebrow content-card__eyebrow">LYRICS</p>
+        <div class="lyrics-block">
+          <p>{{track.lyrics}}</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <!-- END MAIN CONTENT COLUMN -->
+
+    <aside class="sidebar">
+      {% if album %}
+      <div class="sidebar-card glass">
+        <p class="sidebar-card__title">From the album</p>
+        <a href='/album/{{album.id}}'>
+          <div class="album-mini">
+            <span class="album-mini-cover"><img src='{{track.cover.url}}'></span>
+            <span>
+              <span class="album-mini__title" style="display:block;">{{ album.name }}</span>
+              <span class="album-mini__artist">{{ album.tracks.count }} tracks</span>
+            </span>
+          </div>
+        </a>
+        <div id="tracklist">
+          {% for rel in album_tracks %}
+          <a href="{% url 'single_track_view' rel.track.id %}" class="tracklist-row{% if rel.track.id == track.id %} is-current{% endif %}">
+            <span class="tracklist-num">{{ rel.order|stringformat:"02d" }}</span>
+            <span class="tracklist-title">{{ rel.track.title }}</span>
+            {% if rel.track.id == track.id %}<span class="tracklist-tag">Now</span>{% endif %}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if track.artist %}
+      <a href="/artist/{{track.artist.id}}">
+        <div class="sidebar-card glass">
+          <p class="sidebar-card__title">The artist</p>
+          <p class="sidebar-card__sub"></p>
+          <div class="artist-mini">
+            <span class="artist-mini__avatar"><img class="artist-chip__avatar" src='{{ track.artist.photo.url }}'></span>
+            <span class="artist-mini__info">
+              <span class="artist-mini__name" style="display:block;">{{ track.artist.name }}</span>
+              <span class="artist-mini__meta">{% for g in track.artist.genres.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+            </span>
+          </div>
+          <p class="artist-mini__bio">{{ track.artist.description }}</p>
+        </div>
+      </a>
+      {% endif %}
+
+      {% for fartist in track.featured_artist.all %}
+      <div class="sidebar-card glass">
+        <p class="sidebar-card__title">Featured artist</p>
+        <p class="sidebar-card__sub"></p>
+        <div class="artist-mini">
+          <span class="artist-mini__avatar"><img class="artist-chip__avatar" src='{{ fartist.photo.url }}'></span>
+          <span class="artist-mini__info">
+            <span class="artist-mini__name" style="display:block;">{{ fartist.name }}</span>
+            <span class="artist-mini__meta">{% for g in fartist.genres.all %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
+          </span>
+        </div>
+        <p class="artist-mini__bio">{{ fartist.description }}</p>
+      </div>
+      {% endfor %}
+    </aside>
+
+  </div>
+  <!-- END TRACK LAYOUT -->
+
+</main>
+
+</body>
+</html>
+
+{% endblock content %}
+
+{% block extrajs %}<script src="{% static 'js/single_track.js' %}"></script>{% endblock extrajs %}
+{% block extracss %}<link rel="stylesheet" href="{% static "css/single_track.css" %}">{% endblock extracss %}

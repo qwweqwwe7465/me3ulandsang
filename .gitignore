@@ -8,6 +8,7 @@ __pycache__/
 venv/
 env/
 *.egg-info/
+virtual_env
 
 # Django
 db.sqlite3
@@ -30,3 +31,4 @@ Thumbs.db
 
 passenger_wsgi.py
 passenger_wsgi.py
+

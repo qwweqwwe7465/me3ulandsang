@@ -68,7 +68,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
-STATICFILES_DIRS = [BASE_DIR / "me3ulandsang" / "statics"]
+STATICFILES_DIRS = [BASE_DIR / "static_src"]
 
 MEDIA_URL = "/media/"
 

@@ -16,5 +16,5 @@ if os.environ.get("DJANGO_DEBUG_TOOLBAR") == "1":
     INSTALLED_APPS += ["debug_toolbar"]  # noqa: F405
     MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]  # noqa: F405
     
-MEDIA_ROOT = BASE_DIR / "me3ulandsang" / "media"
+MEDIA_ROOT = BASE_DIR / "media"
 STATIC_ROOT = BASE_DIR / "staticfiles"

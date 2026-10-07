@@ -34,6 +34,7 @@
       </div>
 
       <div class="stats-row">
+        {% csrf_token %}
         <span class="stat-pill glass">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="4" height="13" rx="1"/><rect x="10" y="3" width="4" height="18" rx="1"/><rect x="17" y="11" width="4" height="10" rx="1"/></svg>
           {{ album_count }} album{{ album_count|pluralize }}
@@ -44,8 +45,12 @@
         </span>
         <span class="stat-pill glass">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          {{ total_views|intcomma }} views
+          <span id="viewCount">{{ artist.views|intcomma }} views</span>
         </span>
+        <button class="like-btn glass{% if is_liked %} is-liked{% endif %}" id="likeBtn" data-track-id="{{ artist.id }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          <span id="likeCount" data-base-likes="{{ artist.likes }}">{{ artist.likes }}</span>
+        </button>
       </div>
 
       <p class="description-text">{{ artist.description }}</p>
@@ -99,3 +104,36 @@
 {% endblock content %}
 
 {% block extracss %}<link rel="stylesheet" href="{% static "css/artist.css" %}">{% endblock extracss %}
+
+{% block extrajs %}
+<script>
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+  try {
+    const likeBtn = document.getElementById('likeBtn');
+    const likeCount = document.getElementById('likeCount');
+    if (likeBtn && likeCount) {
+      const artistId = likeBtn.dataset.trackId;
+      likeBtn.addEventListener('click', () => {
+        likeBtn.disabled = true;
+        fetch(`/artist/${artistId}/like`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            likeBtn.classList.toggle('is-liked', data.liked);
+            likeCount.textContent = data.likes;
+          })
+          .catch((err) => console.error('Like request failed:', err))
+          .finally(() => { likeBtn.disabled = false; });
+      });
+    }
+  } catch (e) {
+    console.error('Like button error:', e);
+  }
+</script>
+{% endblock extrajs %}

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load humanize %}
 {% block content %}
 
 <!DOCTYPE html>
@@ -40,18 +41,19 @@
       </div>
 
       <div class="stats-row">
+        {% csrf_token %}
         <span class="stat-pill glass">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
           {{album.release_date|date:'Y'}}
         </span>
         <span class="stat-pill glass">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          {{album.views}}
+          <span id="viewCount">{{album.views|intcomma}} views</span>
         </span>
-        <span class="stat-pill glass">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
-          {{album.likes}} likes
-        </span>
+        <button class="like-btn glass{% if is_liked %} is-liked{% endif %}" id="likeBtn" data-track-id="{{ album.id }}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+          <span id="likeCount" data-base-likes="{{ album.likes }}">{{album.likes}}</span>
+        </button>
       </div>
 
       <p class="description-text">{{album.description}}</p>
@@ -90,6 +92,36 @@
 </html>
 {% endblock content %}
 
-{% block extrajs %}<script src="{% static "js/album.js" %}"></script>{% endblock extrajs %}
+{% block extrajs %}<script src="{% static "js/album.js" %}"></script>
+<script>
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+  try {
+    const likeBtn = document.getElementById('likeBtn');
+    const likeCount = document.getElementById('likeCount');
+    if (likeBtn && likeCount) {
+      const albumId = likeBtn.dataset.trackId;
+      likeBtn.addEventListener('click', () => {
+        likeBtn.disabled = true;
+        fetch(`/album/${albumId}/like`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            likeBtn.classList.toggle('is-liked', data.liked);
+            likeCount.textContent = data.likes;
+          })
+          .catch((err) => console.error('Like request failed:', err))
+          .finally(() => { likeBtn.disabled = false; });
+      });
+    }
+  } catch (e) {
+    console.error('Like button error:', e);
+  }
+</script>{% endblock extrajs %}
 
 {% block extracss %}<link rel="stylesheet" href="{% static "css/album.css" %}">{% endblock extracss %}

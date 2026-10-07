@@ -299,10 +299,40 @@ def extract_metadata_view(request):
 
 def album_view(request,aid):
     album = get_object_or_404(Album, id=aid)
-    
+
+    viewed_albums = request.session.get('viewed_albums', [])
+    if aid not in viewed_albums:
+        album.views += 1
+        album.save(update_fields=['views'])
+        viewed_albums.append(aid)
+        request.session['viewed_albums'] = viewed_albums
+
+    liked_albums = request.session.get('liked_albums', [])
+    is_liked = aid in liked_albums
+
     relations=album.albumr.select_related("track").order_by("order")
-    context = {'album': album,'relations':relations}
+    context = {'album': album,'relations':relations,'is_liked':is_liked}
     return render(request,'album.html',context)
+
+def like_album_view(request, aid):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    album = get_object_or_404(Album, id=aid)
+
+    liked_albums = request.session.get('liked_albums', [])
+    if aid in liked_albums:
+        liked_albums.remove(aid)
+        album.likes = max(album.likes - 1, 0)
+        liked = False
+    else:
+        liked_albums.append(aid)
+        album.likes += 1
+        liked = True
+    album.save(update_fields=['likes'])
+    request.session['liked_albums'] = liked_albums
+
+    return JsonResponse({'liked': liked, 'likes': album.likes})
 
 def playlist_view(request,pid):
 
@@ -345,16 +375,46 @@ def like_playlist_view(request, pid):
 
 def artist_view(request,aid):
     artist = get_object_or_404(Artist, id=aid)
+
+    viewed_artists = request.session.get('viewed_artists', [])
+    if aid not in viewed_artists:
+        artist.views += 1
+        artist.save(update_fields=['views'])
+        viewed_artists.append(aid)
+        request.session['viewed_artists'] = viewed_artists
+
+    liked_artists = request.session.get('liked_artists', [])
+    is_liked = aid in liked_artists
+
     tracks = Track.objects.filter(Q(artist=artist) | Q(featured_artist=artist)).distinct()
     top_tracks = tracks.order_by('-likes')[:5]
     albums = Album.objects.filter(albumr__track__in=tracks).distinct().order_by('-release_date')
-    total_views = tracks.aggregate(total=Sum('views'))['total'] or 0
     context = {
         'artist': artist,
         'top_tracks': top_tracks,
         'albums': albums,
         'track_count': tracks.count(),
         'album_count': albums.count(),
-        'total_views': total_views,
+        'is_liked': is_liked,
     }
     return render(request,'artist.html',context)
+
+def like_artist_view(request, aid):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid method'}, status=405)
+
+    artist = get_object_or_404(Artist, id=aid)
+
+    liked_artists = request.session.get('liked_artists', [])
+    if aid in liked_artists:
+        liked_artists.remove(aid)
+        artist.likes = max(artist.likes - 1, 0)
+        liked = False
+    else:
+        liked_artists.append(aid)
+        artist.likes += 1
+        liked = True
+    artist.save(update_fields=['likes'])
+    request.session['liked_artists'] = liked_artists
+
+    return JsonResponse({'liked': liked, 'likes': artist.likes})

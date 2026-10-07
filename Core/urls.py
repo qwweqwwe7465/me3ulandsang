@@ -4,7 +4,9 @@ from django.urls import path
 
 from .views import (
     about_view,
+    like_album_view,
     album_view,
+    like_artist_view,
     artist_view,
     extract_metadata_view,
     index_view,
@@ -28,9 +30,11 @@ urlpatterns = [
         path('test',test_view,name='test'),
         path('trackadd',track_add_view,name='track_add_view'),
         path('album/<int:aid>',album_view,name='album_view'),
+        path('album/<int:aid>/like', like_album_view, name='like_album_view'),
         path('playlist/<int:pid>',playlist_view,name='playlist_view'),
         path('extract-metadata/', extract_metadata_view, name='extract_metadata'),
         path('artist/<int:aid>',artist_view,name='artist_view'),
+        path('artist/<int:aid>/like', like_artist_view, name='like_artist_view'),
         path('playlist/<int:pid>/like', like_playlist_view, name='like_playlist_view'),
 ]
 

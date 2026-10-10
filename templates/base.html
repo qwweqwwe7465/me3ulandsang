@@ -3,12 +3,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Me3ul and sang!</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link href="{% static 'css/styles.css' %}" rel="stylesheet">
+<link href="{% static 'css/styles.css' %}?v=mobile-nav-4" rel="stylesheet">
 
 {% block extracss %}{% endblock extracss %}
 </head>
@@ -43,6 +43,13 @@
   </nav>
 </div>
 
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a href="/#charts" class="mobile-nav__item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V10M10 19V5M16 19v-8M22 19H2"/></svg><span>Charts</span></a>
+  <a href="/search?s=&type=playlists" class="mobile-nav__item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg><span>Playlists</span></a>
+  <a href="/search?s" class="mobile-nav__item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg><span>Browse</span></a>
+  <a href="/about" class="mobile-nav__item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>About</span></a>
+</nav>
+
 
 {% block content %}
 {% endblock content %}
@@ -69,6 +76,7 @@
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
   <span id="toastText">Done</span>
 </div>
+<script src="{% static 'js/mobile-nav.js' %}"></script>
 {% block extrajs %}{% endblock extrajs %}
 
 </body>

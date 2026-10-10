@@ -49,6 +49,12 @@
         {% endfor %}
       </div>
 
+      <div class="genre-row track-genre-row">
+        {% for genre in track.genres.all %}
+        <a class="genre-tag glass" href="{% url 'search_view' %}?genre={{ genre.name|urlencode }}">{{ genre.name }}</a>
+        {% endfor %}
+      </div>
+
       {% if track.audio_file %}
       <section class="content-card glass player-card">
         <audio id="trackAudio" src="{{ track.audio_file.url }}" preload="metadata"></audio>

@@ -1,0 +1,429 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Me3ul and sang!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="/static/css/styles.css?v=mobile-nav-4" rel="stylesheet">
+
+<link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+
+<div class="bg-ambient">
+  <div class="blob blob--1"></div>
+  <div class="blob blob--2"></div>
+  <div class="blob blob--3"></div>
+</div>
+
+<div class="nav-wrap">
+  <nav class="nav glass" id="nav">
+    <a class="brand" href="/"><span class="brand-mark"></span>me3ulandsang</a>
+
+    <ul class="nav-links">
+      <li><a href="/#charts">Charts</a></li>
+      <li><a href="/search?s=&type=playlists">Playlists</a></li>
+      <li><a href="/search?s">Browse</a></li>
+      <li><a href="/about">About</a></li>
+    </ul>
+    
+    <div class="nav-search">
+      <form action="/search" name='search' method="GET" style="display:contents;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" name="s" placeholder="Search songs, artists, lyrics…" aria-label="Search your library">
+      </form>
+      
+    </div>
+    
+    
+  </nav>
+</div>
+
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <a href="/#charts" class="mobile-nav__item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V10M10 19V5M16 19v-8M22 19H2"/></svg><span>Charts</span></a>
+  <a href="/search?s=&type=playlists" class="mobile-nav__item"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h10"/></svg><span>Playlists</span></a>
+  <a href="/search?s" class="mobile-nav__item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg><span>Browse</span></a>
+  <a href="/about" class="mobile-nav__item"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>About</span></a>
+</nav>
+
+
+
+
+
+<main class="shell">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <p class="eyebrow" style="margin-bottom:20px;">some dude's personal library</p>
+      <h1 class="hero__title">Listen to music<br>AD-less and <em>free</em></h1>
+      <p class="hero__sub">this is a personal library of me logging every music i listen to. a passion project solely fuled by persistence( and beaing an annoying person)</p>
+      <div class="hero__ctas">
+        
+        <button class="btn btn--primary" id="openLogBtn">
+          <a href='./search?s='>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.9"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Search the library
+        </button>
+        <a href="#charts" class="btn btn--ghost">Explore Charts</a>
+      </div>
+    </div>
+
+    <div class="cover-collage" aria-hidden="true">
+      <img class='THE_LOGO' src='/static/img/logo%20lowr.png'>
+    </div>
+  </section>
+
+  <!-- FEATURE STRIP -->
+  <section class="feature-strip" id='charts'>
+    <div class="feature-pill glass">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>I add shit whenever I want</span>
+    </div>
+    <div class="feature-pill glass">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="3.5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="3.5" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <span>Includes custom playlists</span>
+    </div>
+    <div class="feature-pill glass">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19v3M8 22h8"/><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"/><path d="M19 10a7 7 0 0 1-14 0"/></svg>
+      <span>Lyrics on most tracks</span>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats" >
+    <div class="stat glass"><div class="stat__num">8</div><div class="stat__label">Songs logged</div></div>
+    <div class="stat glass"><div class="stat__num">1</div><div class="stat__label">Playlists built</div></div>
+    <div class="stat glass"><div class="stat__num">5</div><div class="stat__label">Lyrics saved</div></div>
+    <div class="stat glass"><div class="stat__num">6</div><div class="stat__label">Genres tagged</div></div>
+  </section>
+
+  <!-- TOP SONGS -->
+<section class="section-reveal" >
+    <div class="section__head">
+      <h2 class="section__title">The top songs</h2>
+      <span class="section__hint">Most Liked</span>
+    </div>
+    
+  <a class="chart-row glass" href="/track/1" aria-label="Time Is Running Out by Muse">
+    <span class="chart-rank mono">01</span>
+    <span class="chart-cover">
+      <img src="/media/covers/cover.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">Time Is Running Out</span>
+      <span class="chart-artist" style="display:block;">Muse</span>
+    </span>
+    <span class="chart-lyrics"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19v3M8 22h8"></path><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"></path><path d="M19 10a7 7 0 0 1-14 0"></path></svg><span style="font-size:11px;">has lyrics</span></span>
+    <span class="chart-logs">0</span>
+  </a>
+    
+  <a class="chart-row glass" href="/track/2" aria-label="Love You to Death by Type O Negative">
+    <span class="chart-rank mono">02</span>
+    <span class="chart-cover">
+      <img src="/media/covers/cover_6enxS6e.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">Love You to Death</span>
+      <span class="chart-artist" style="display:block;">Type O Negative</span>
+    </span>
+    <span class="chart-lyrics"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19v3M8 22h8"></path><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"></path><path d="M19 10a7 7 0 0 1-14 0"></path></svg><span style="font-size:11px;">has lyrics</span></span>
+    <span class="chart-logs">0</span>
+  </a>
+    
+  <a class="chart-row glass" href="/track/3" aria-label="My Own Summer (Shove It) by Deftones">
+    <span class="chart-rank mono">03</span>
+    <span class="chart-cover">
+      <img src="/media/covers/cover.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">My Own Summer (Shove It)</span>
+      <span class="chart-artist" style="display:block;">Deftones</span>
+    </span>
+    <span class="chart-lyrics"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19v3M8 22h8"></path><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"></path><path d="M19 10a7 7 0 0 1-14 0"></path></svg><span style="font-size:11px;">has lyrics</span></span>
+    <span class="chart-logs">0</span>
+  </a>
+    
+  <a class="chart-row glass" href="/track/4" aria-label="Never Enough by Dream Theater">
+    <span class="chart-rank mono">04</span>
+    <span class="chart-cover">
+      <img src="/media/covers/cover_1yAtnm8.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">Never Enough</span>
+      <span class="chart-artist" style="display:block;">Dream Theater</span>
+    </span>
+    <span class="chart-lyrics"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19v3M8 22h8"></path><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"></path><path d="M19 10a7 7 0 0 1-14 0"></path></svg><span style="font-size:11px;">has lyrics</span></span>
+    <span class="chart-logs">0</span>
+  </a>
+    
+  <a class="chart-row glass" href="/track/5" aria-label="Parabola by TOOL">
+    <span class="chart-rank mono">05</span>
+    <span class="chart-cover">
+      <img src="/media/covers/cover_GcCAP9D.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">Parabola</span>
+      <span class="chart-artist" style="display:block;">TOOL</span>
+    </span>
+    
+    <span class="chart-logs">0</span>
+  </a>
+    
+  <a class="chart-row glass" href="/track/6" aria-label="Ending Credits by Opeth">
+    <span class="chart-rank mono">06</span>
+    <span class="chart-cover">
+      <img src="/media/covers/cover_M7iTgEo.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">Ending Credits</span>
+      <span class="chart-artist" style="display:block;">Opeth</span>
+    </span>
+    
+    <span class="chart-logs">0</span>
+  </a>
+    
+  <a class="chart-row glass" href="/track/7" aria-label="Azadi by Fadaei">
+    <span class="chart-rank mono">07</span>
+    <span class="chart-cover">
+      <img src="/media/covers/cover_N0Lk6XH.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">Azadi</span>
+      <span class="chart-artist" style="display:block;">Fadaei</span>
+    </span>
+    <span class="chart-lyrics"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19v3M8 22h8"></path><path d="M12 15a4 4 0 0 0 4-4V6a4 4 0 0 0-8 0v5a4 4 0 0 0 4 4z"></path><path d="M19 10a7 7 0 0 1-14 0"></path></svg><span style="font-size:11px;">has lyrics</span></span>
+    <span class="chart-logs">0</span>
+  </a>
+    
+  <a class="chart-row glass" href="/track/8" aria-label="Waterworks by Bernth">
+    <span class="chart-rank mono">08</span>
+    <span class="chart-cover">
+      <img src="/media/covers/cover_mxrz33Y.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;">
+    </span>
+    <span class="chart-info">
+      <span class="chart-title" style="display:block;">Waterworks</span>
+      <span class="chart-artist" style="display:block;">Bernth</span>
+    </span>
+    
+    <span class="chart-logs">0</span>
+  </a>
+    
+  </section>
+
+<!-- RECENTLY LOGGED -->
+<section class="section-reveal">
+  <div class="section__head">
+    <h2 class="section__title">Recently logged</h2>
+    <span class="section__hint">The latest entries</span>
+  </div>
+  <div class="recent-row" id="recentRow">
+    
+    <a class="recent-card glass" href='/track/8'>
+      <span class="recent-cover"><img src="/media/covers/cover_mxrz33Y.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">Waterworks</span>
+        <span class="recent-meta">3 days, 23 hours</span>
+      </span>
+    </a>
+    
+    <a class="recent-card glass" href='/track/7'>
+      <span class="recent-cover"><img src="/media/covers/cover_N0Lk6XH.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">Azadi</span>
+        <span class="recent-meta">3 days, 23 hours</span>
+      </span>
+    </a>
+    
+    <a class="recent-card glass" href='/track/6'>
+      <span class="recent-cover"><img src="/media/covers/cover_M7iTgEo.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">Ending Credits</span>
+        <span class="recent-meta">3 days, 23 hours</span>
+      </span>
+    </a>
+    
+    <a class="recent-card glass" href='/track/5'>
+      <span class="recent-cover"><img src="/media/covers/cover_GcCAP9D.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">Parabola</span>
+        <span class="recent-meta">3 days, 23 hours</span>
+      </span>
+    </a>
+    
+    <a class="recent-card glass" href='/track/4'>
+      <span class="recent-cover"><img src="/media/covers/cover_1yAtnm8.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">Never Enough</span>
+        <span class="recent-meta">3 days, 23 hours</span>
+      </span>
+    </a>
+    
+    <a class="recent-card glass" href='/track/3'>
+      <span class="recent-cover"><img src="/media/covers/cover.jpeg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">My Own Summer (Shove It)</span>
+        <span class="recent-meta">3 days, 23 hours</span>
+      </span>
+    </a>
+    
+    <a class="recent-card glass" href='/track/2'>
+      <span class="recent-cover"><img src="/media/covers/cover_6enxS6e.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">Love You to Death</span>
+        <span class="recent-meta">3 days, 23 hours</span>
+      </span>
+    </a>
+    
+    <a class="recent-card glass" href='/track/1'>
+      <span class="recent-cover"><img src="/media/covers/cover.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"></span>
+      <span>
+        <span class="recent-title" style="display:block;">Time Is Running Out</span>
+        <span class="recent-meta">3 days, 23 hours</span>
+      </span>
+    </a>
+    
+  </div>
+  </section>
+
+
+
+  <!-- PLAYLISTS -->
+<section class="section-reveal" id="playlists">
+  <div class="section__head">
+    <h2 class="section__title"><br>Top playlists</h2>
+    <span class="section__hint"><a href='/search?s=&type=playlists'>see all</a></span>
+  </div>
+
+  <div class="playlist-grid" id="playlistGrid">
+    
+    <a href='playlist/1'>
+      <div class="playlist-card glass">
+        <div class="playlist-thumb">
+          <img src='/media/covers/cover.jpg'>
+          <img src='/media/covers/cover_1yAtnm8.jpg'>
+          <img src='/media/covers/cover.jpeg'>
+          <img src='/media/covers/cover_GcCAP9D.jpg'>
+        </div>
+        <p class="playlist-title">nisxx</p>
+        <p class="playlist-meta">
+          Alternative Metal
+        </p>
+        <p class="playlist-updated">Updated 3 days, 23 hours ago</p>
+      </div>
+    </a>
+    
+  </div>
+</section>
+
+
+  <!-- BROWSE BY GENRE -->
+<section class="section reveal" id="browse">
+  <div class="section__head">
+    <h2 class="section__title">Browse by genre</h2>
+    <span class="section__hint">6 total</span>
+  </div>
+  <div class="genre-grid" id="genreGrid">
+    
+    <a href='search?genre=Progressive Metal'>
+    <div class="genre-tile glass " style="--tint:var(--violet); position:relative; overflow:hidden;">
+      
+        <div style="position:absolute; inset:0; background-image:url('/media/covers/cover_1yAtnm8.jpg'); background-size:cover; background-position:center; filter:blur(2px); opacity:0.4; z-index:0;"></div>
+      
+      <p class="genre-tile__title" style="position:relative; z-index:1;">Progressive Metal</p>
+      <p class="genre-tile__count" style="position:relative; z-index:1;">3 tracks</p>
+    </div>
+  </a>
+    
+    <a href='search?genre=Alternative Metal'>
+    <div class="genre-tile glass " style="--tint:var(--violet); position:relative; overflow:hidden;">
+      
+        <div style="position:absolute; inset:0; background-image:url('/media/covers/cover.jpeg'); background-size:cover; background-position:center; filter:blur(2px); opacity:0.4; z-index:0;"></div>
+      
+      <p class="genre-tile__title" style="position:relative; z-index:1;">Alternative Metal</p>
+      <p class="genre-tile__count" style="position:relative; z-index:1;">1 tracks</p>
+    </div>
+  </a>
+    
+    <a href='search?genre=Alternative Rock'>
+    <div class="genre-tile glass " style="--tint:var(--violet); position:relative; overflow:hidden;">
+      
+        <div style="position:absolute; inset:0; background-image:url('/media/covers/cover.jpg'); background-size:cover; background-position:center; filter:blur(2px); opacity:0.4; z-index:0;"></div>
+      
+      <p class="genre-tile__title" style="position:relative; z-index:1;">Alternative Rock</p>
+      <p class="genre-tile__count" style="position:relative; z-index:1;">1 tracks</p>
+    </div>
+  </a>
+    
+    <a href='search?genre=Gothic Metal'>
+    <div class="genre-tile glass " style="--tint:var(--violet); position:relative; overflow:hidden;">
+      
+        <div style="position:absolute; inset:0; background-image:url('/media/covers/cover_6enxS6e.jpg'); background-size:cover; background-position:center; filter:blur(2px); opacity:0.4; z-index:0;"></div>
+      
+      <p class="genre-tile__title" style="position:relative; z-index:1;">Gothic Metal</p>
+      <p class="genre-tile__count" style="position:relative; z-index:1;">1 tracks</p>
+    </div>
+  </a>
+    
+    <a href='search?genre=Hip-Hop'>
+    <div class="genre-tile glass " style="--tint:var(--violet); position:relative; overflow:hidden;">
+      
+        <div style="position:absolute; inset:0; background-image:url('/media/covers/cover_N0Lk6XH.jpeg'); background-size:cover; background-position:center; filter:blur(2px); opacity:0.4; z-index:0;"></div>
+      
+      <p class="genre-tile__title" style="position:relative; z-index:1;">Hip-Hop</p>
+      <p class="genre-tile__count" style="position:relative; z-index:1;">1 tracks</p>
+    </div>
+  </a>
+    
+    <a href='search?genre=Instrumental Rock'>
+    <div class="genre-tile glass " style="--tint:var(--violet); position:relative; overflow:hidden;">
+      
+        <div style="position:absolute; inset:0; background-image:url('/media/covers/cover_mxrz33Y.jpeg'); background-size:cover; background-position:center; filter:blur(2px); opacity:0.4; z-index:0;"></div>
+      
+      <p class="genre-tile__title" style="position:relative; z-index:1;">Instrumental Rock</p>
+      <p class="genre-tile__count" style="position:relative; z-index:1;">1 tracks</p>
+    </div>
+  </a>
+    
+  </div>
+  
+</section>
+
+  <!-- CTA -->
+  
+
+
+
+
+
+<footer class="footer shell">
+  <div>
+    <p class="footer__brand">me3ul and sang</p>
+    <p>sharing made easier.<br><br>
+      really?
+    </p>
+  </div>
+  <div class="footer__links">
+      <a href="/#charts">Charts</a>
+      <a href="/search?s=&type=playlists">Playlists</a>
+      <a href="/search?s">Browse</a>
+      <a href="/about">About</a>
+  </div>
+  <div>Honestly I dont know wtf Im doing at this point ©</div>
+</footer>
+
+</main>
+
+<div class="toast" id="toast">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastText">Done</span>
+</div>
+<script src="/static/js/mobile-nav.js"></script>
+<script src="/static/js/script.js"></script>
+
+</body>
+</html>

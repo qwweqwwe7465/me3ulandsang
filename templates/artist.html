@@ -29,7 +29,7 @@
 
       <div class="genre-row">
         {% for genre in artist.genres.all %}
-        <span class="genre-tag glass">{{ genre.name }}</span>
+        <a class="genre-tag glass" href="{% url 'search_view' %}?genre={{ genre.name|urlencode }}">{{ genre.name }}</a>
         {% endfor %}
       </div>
 

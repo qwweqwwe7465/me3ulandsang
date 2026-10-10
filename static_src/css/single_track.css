@@ -104,6 +104,9 @@
     line-height:1.08; letter-spacing:-0.02em; margin-bottom:16px; }
 
   .track-artists{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
+  .genre-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+  .genre-tag{ display:inline-flex; align-items:center; padding:6px 14px; border-radius:999px; font-size:12px; font-weight:600; color:var(--text-1); transition:background 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+  .genre-tag:hover{ background:var(--glass-fill-strong); border-color:var(--glass-border-strong); color:var(--text-0); }
   .artist-chip{ display:inline-flex; align-items:center; gap:9px; padding:6px 16px 6px 6px; border-radius:999px;
     transition:background 0.2s ease, transform 0.2s ease; }
   .artist-chip:hover{ background:var(--glass-fill-strong); transform:translateY(-1px); }

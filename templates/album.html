@@ -35,7 +35,7 @@
 
       <div class="genre-row">
         {% for genre  in album.genres.all %}
-        <span class="genre-tag glass">{{genre}}</span>
+        <a class="genre-tag glass" href="{% url 'search_view' %}?genre={{ genre.name|urlencode }}">{{genre}}</a>
         {% endfor %}
         
       </div>

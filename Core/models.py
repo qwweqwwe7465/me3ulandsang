@@ -109,3 +109,50 @@ class Feedback(models.Model):
     def __str__(self):
             return self.name
     
+
+class Visit(models.Model):
+    """One tracked page view, written by Core.middleware.VisitorTrackingMiddleware.
+
+    Raw rows are meant to be short lived: Core/management/commands/prune_visits.py
+    deletes the old ones, while DailyVisitor keeps the daily headline numbers.
+    """
+
+    path = models.CharField(max_length=500, db_index=True)
+    referrer = models.CharField(max_length=500, blank=True)
+    session_key = models.CharField(max_length=40, blank=True, db_index=True)
+    # Salted hash of the client IP. Never the address itself.
+    visitor_hash = models.CharField(max_length=64, db_index=True)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="visits")
+    user_agent = models.CharField(max_length=300, blank=True)
+    device = models.CharField(max_length=20, blank=True, db_index=True)
+    is_bot = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+        verbose_name = "page view"
+        verbose_name_plural = "page views"
+
+    def __str__(self):
+        return f"{self.path} at {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class DailyVisitor(models.Model):
+    """One row per visitor per day, which makes unique and returning counts cheap."""
+
+    date = models.DateField(db_index=True)
+    visitor_hash = models.CharField(max_length=64)
+    first_seen = models.DateTimeField(auto_now_add=True)
+    views = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ("-date",)
+        constraints = [
+            models.UniqueConstraint(fields=("date", "visitor_hash"), name="unique_visitor_per_day"),
+        ]
+        verbose_name = "daily visitor"
+        verbose_name_plural = "daily visitors"
+
+    def __str__(self):
+        return f"{self.date} {self.visitor_hash[:8]}"
+

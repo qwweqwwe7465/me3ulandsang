@@ -95,6 +95,46 @@
   </div>
   {% endif %}
 
+  {% if dashboard.traffic %}
+  <div class="module" style="margin-bottom:20px;">
+    <h2>
+      Visitors
+      <span style="float:right;font-size:12px;font-weight:normal;">
+        <a href="{% url 'admin:analytics' %}">Full analytics &rarr;</a>
+      </span>
+    </h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:12px;">
+      <div style="padding:10px 12px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:22px;font-weight:600;">{{ dashboard.traffic.today_views|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Views today</div>
+        <div style="margin-top:4px;">{{ dashboard.traffic.today_change }}</div>
+      </div>
+      <div style="padding:10px 12px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:22px;font-weight:600;">{{ dashboard.traffic.today_visitors|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Visitors today</div>
+      </div>
+      <div style="padding:10px 12px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:22px;font-weight:600;">{{ dashboard.traffic.window_views|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Views, {{ dashboard.traffic.days }} days</div>
+      </div>
+      <div style="padding:10px 12px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:22px;font-weight:600;">{{ dashboard.traffic.window_visitors|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Visitors, {{ dashboard.traffic.days }} days</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:70px;padding:0 12px 12px;">
+      {% for point in dashboard.traffic.series %}
+      <div style="flex:1;text-align:center;" title="{{ point.day|date:'M j' }}: {{ point.views }} views">
+        <div style="height:50px;display:flex;align-items:flex-end;">
+          <div style="width:100%;height:{{ point.height }}%;min-height:2px;background:#79aec8;border-radius:2px 2px 0 0;"></div>
+        </div>
+        <div class="mini quiet" style="font-size:9px;">{{ point.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
   {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
 </div>
 {% endblock %}

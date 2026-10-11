@@ -6,12 +6,18 @@ needs attention (missing artwork, missing audio, missing lyrics).
 """
 
 import logging
+from datetime import timedelta
+from urllib.parse import urlparse
 
 from django import forms
+from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import Group, User
-from django.db.models import Count
-from django.urls import reverse
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncDate
+from django.template.response import TemplateResponse
+from django.urls import path, reverse
+from django.utils import timezone
 from django.utils.functional import SimpleLazyObject
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
@@ -20,11 +26,13 @@ from .models import (
     Album,
     Album_track_relation,
     Artist,
+    DailyVisitor,
     Feedback,
     Genre,
     Playlist,
     Playlist_track_relation,
     Track,
+    Visit,
 )
 
 logger = logging.getLogger(__name__)
@@ -750,19 +758,298 @@ def _dashboard_context():
         "checks": checks,
         "top_tracks": top_tracks,
         "top_artists": top_artists,
+        "traffic": _traffic_snapshot(7),
     }
 
 
+# --------------------------------------------------------------------------- #
+# Visitor statistics
+#
+# The raw material is Core.models.Visit (one row per page view) and
+# Core.models.DailyVisitor (one row per visitor per day). Everything below only
+# reads them; Core.middleware.VisitorTrackingMiddleware writes them.
+# --------------------------------------------------------------------------- #
+
+def _percent_change(current, previous):
+    if not previous:
+        return None
+    return round((current - previous) * 100 / previous, 1)
+
+
+def _pct_change_display(current, previous):
+    change = _percent_change(current, previous)
+    if change is None:
+        return mark_safe('<span class="mini quiet">new</span>')
+    colour = "#0a7d38" if change >= 0 else "#ba2121"
+    arrow = "▲" if change >= 0 else "▼"
+    return format_html(
+        '<span style="color:{};font-size:12px;">{} {}%</span>', colour, arrow, abs(change)
+    )
+
+
+def _traffic_snapshot(days=7):
+    """Headline visitor numbers for the dashboard strip."""
+    if not getattr(settings, "VISITOR_TRACKING_ENABLED", True):
+        return None
+    today = timezone.localdate()
+    start = today - timedelta(days=days - 1)
+
+    # Human traffic only: crawlers are recorded but kept out of the reporting.
+    views = Visit.objects.filter(is_bot=False, created_at__date__gte=start)
+    today_views = views.filter(created_at__date=today).count()
+    today_visitors = (
+        views.filter(created_at__date=today).values("visitor_hash").distinct().count()
+    )
+    yesterday_views = Visit.objects.filter(
+        is_bot=False, created_at__date=today - timedelta(days=1)
+    ).count()
+    window_views = views.count()
+    window_visitors = views.values("visitor_hash").distinct().count()
+
+    # One query for the whole window, grouped by day.
+    counts = {
+        row["day"]: row["count"]
+        for row in views.annotate(day=TruncDate("created_at"))
+        .values("day")
+        .annotate(count=Count("id"))
+    }
+    series = []
+    for offset in range(days):
+        day = start + timedelta(days=offset)
+        series.append(
+            {
+                "day": day,
+                "label": day.strftime("%a"),
+                "views": counts.get(day, 0),
+            }
+        )
+    peak = max([point["views"] for point in series] or [0]) or 1
+    for point in series:
+        point["height"] = max(2, round(point["views"] * 100 / peak))
+
+    returning = DailyVisitor.objects.filter(
+        date__gte=start, date__lte=today, views__gt=1
+    ).count()
+    unique = DailyVisitor.objects.filter(date__gte=start, date__lte=today).count()
+
+    return {
+        "days": days,
+        "series": series,
+        "window_views": window_views,
+        "window_visitors": window_visitors,
+        "today_views": today_views,
+        "today_visitors": today_visitors,
+        "today_change": _pct_change_display(today_views, yesterday_views),
+        "yesterday_views": yesterday_views,
+        "returning_visitors": returning,
+        "unique_visitor_days": unique,
+        "new_visitors": max(unique - returning, 0),
+    }
+
+
+def _clean_referrer(referrer):
+    """Reduce a referrer URL to a hostname we can group by."""
+    if not referrer:
+        return "(direct)"
+    host = urlparse(referrer).netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+    return host or "(direct)"
+
+
+def _internal_hosts(request):
+    hosts = {"localhost", "127.0.0.1", "[::1]", "testserver"}
+    if request is not None:
+        try:
+            hosts.add(request.get_host().split(":")[0].lower())
+        except Exception:  # pragma: no cover - request may be unusable in a shell
+            pass
+    return hosts
+
+
+def _referrer_rows(request, since, limit=10):
+    rows = {}
+    for referrer, count in (
+        Visit.objects.filter(is_bot=False, created_at__gte=since)
+        .values_list("referrer")
+        .annotate(count=Count("id"))
+        .order_by("-count")
+    ):
+        host = _clean_referrer(referrer)
+        rows[host] = rows.get(host, 0) + count
+    ordered = sorted(rows.items(), key=lambda item: item[1], reverse=True)[:limit]
+    internal = _internal_hosts(request)
+    return [
+        {
+            "host": host,
+            # "came from your own pages" is useful, but call it what it is.
+            "label": "Own pages (internal)" if host in internal else host,
+            "count": count,
+        }
+        for host, count in ordered
+        if not (host == "(direct)" and count == 0)
+    ]
+
+
+def traffic_statistics(request, days=30):
+    """Everything the Analytics admin page shows for the last ``days`` days."""
+    today = timezone.localdate()
+    since = timezone.now() - timedelta(days=days)
+    previous_since = since - timedelta(days=days)
+
+    current = Visit.objects.filter(is_bot=False, created_at__gte=since)
+    previous = Visit.objects.filter(is_bot=False, created_at__gte=previous_since, created_at__lt=since)
+
+    views = current.count()
+    visitors = current.values("visitor_hash").distinct().count()
+    previous_views = previous.count()
+    previous_visitors = previous.values("visitor_hash").distinct().count()
+    bot_views = Visit.objects.filter(is_bot=True, created_at__gte=since).count()
+
+    top_pages = list(
+        current.values("path")
+        .annotate(views=Count("id"), visitors=Count("visitor_hash", distinct=True))
+        .order_by("-views")[:15]
+    )
+    top_referrers = _referrer_rows(request, since)
+    devices = list(
+        current.exclude(device="").values("device").annotate(count=Count("id")).order_by("-count")
+    )
+    daily = list(
+        DailyVisitor.objects.filter(date__gte=today - timedelta(days=days - 1), date__lte=today)
+        .values("date")
+        .annotate(visitors=Count("id"), views=Sum("views"))
+        .order_by("date")
+    )
+    peak = max([row["views"] or 0 for row in daily] or [0]) or 1
+    for row in daily:
+        row["height"] = max(2, round((row["views"] or 0) * 100 / peak))
+
+    top_tracks = [
+        {
+            "name": track.title,
+            "views": track.views,
+            "likes": track.likes,
+            "url": reverse("admin:Core_track_change", args=[track.pk]),
+        }
+        for track in Track.objects.order_by("-views")[:10]
+    ]
+
+    return {
+        "days": days,
+        "since": since,
+        "views": views,
+        "visitors": visitors,
+        "views_change": _pct_change_display(views, previous_views),
+        "visitors_change": _pct_change_display(visitors, previous_visitors),
+        "views_per_visitor": round(views / visitors, 2) if visitors else 0,
+        "bot_views": bot_views,
+        "returning_visitors": DailyVisitor.objects.filter(
+            date__gte=today - timedelta(days=days - 1), date__lte=today, views__gt=1
+        ).count(),
+        "top_pages": top_pages,
+        "top_referrers": top_referrers,
+        "devices": devices,
+        "daily": daily,
+        "top_tracks": top_tracks,
+        "latest": list(
+            current.select_related("user").order_by("-created_at")[:25]
+        ),
+        "tracking_enabled": getattr(settings, "VISITOR_TRACKING_ENABLED", True),
+        "retention_days": getattr(settings, "VISITOR_RETENTION_DAYS", 180),
+    }
+
+
+class CatalogueAdminSite(admin.AdminSite):
+    """Adds an Analytics page and the dashboard context to the admin."""
+
+    def get_urls(self):
+        return [
+            path(
+                "analytics/",
+                self.admin_view(self.analytics_view),
+                name="analytics",
+            ),
+        ] + super().get_urls()
+
+    def analytics_view(self, request):
+        try:
+            days = int(request.GET.get("days", 30))
+        except (TypeError, ValueError):
+            days = 30
+        days = max(1, min(days, 365))
+        context = {
+            **self.each_context(request),
+            "title": "Visitor analytics",
+            "subtitle": f"last {days} days",
+            "stats": traffic_statistics(request, days=days),
+            "day_options": [7, 30, 90, 365],
+        }
+        return TemplateResponse(request, "admin/analytics.html", context)
+
+
+# --------------------------------------------------------------------------- #
+# Visitor tracking admin
+# --------------------------------------------------------------------------- #
+
+@admin.register(Visit)
+class VisitAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "path", "referrer_host", "device", "user", "is_bot")
+    list_filter = ("is_bot", "device", "created_at")
+    search_fields = ("path", "referrer", "user__username")
+    date_hierarchy = "created_at"
+    ordering = ("-created_at",)
+    list_per_page = 50
+    list_select_related = ("user",)
+    readonly_fields = (
+        "path",
+        "referrer",
+        "session_key",
+        "visitor_hash",
+        "user",
+        "user_agent",
+        "device",
+        "is_bot",
+        "created_at",
+    )
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="Referrer")
+    def referrer_host(self, obj):
+        return _clean_referrer(obj.referrer)
+
+
+@admin.register(DailyVisitor)
+class DailyVisitorAdmin(admin.ModelAdmin):
+    list_display = ("date", "visitor", "views", "first_seen")
+    list_filter = ("date",)
+    date_hierarchy = "date"
+    ordering = ("-date", "visitor_hash")
+    list_per_page = 50
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.display(description="Visitor")
+    def visitor(self, obj):
+        return f"{obj.visitor_hash[:10]}…"
+
+
 def _install_dashboard_context():
-    """Attach the dashboard to the site the project URLconf actually serves.
+    """Attach the dashboard and Analytics page to the site the URLconf serves.
 
     ``me3ulandsang/urls.py`` wires up ``admin.site``, so instead of replacing the
-    default site (which would leave the old one handling /admin/) the dashboard
-    hook is wrapped onto that same site. The statistics are wrapped in a lazy
-    object so the queries only run on pages that actually read ``dashboard``
-    (the index) and never while opening a change form.
+    default site (which would leave the old one handling /admin/) the hooks are
+    wrapped onto that same site. The statistics are wrapped in a lazy object so
+    the queries only run on pages that actually read ``dashboard`` (the index)
+    and never while opening a change form.
     """
     site = admin.site
+
+    if not isinstance(site, CatalogueAdminSite):
+        site.__class__ = CatalogueAdminSite
     if getattr(site, "_dashboard_installed", False):
         return site
 

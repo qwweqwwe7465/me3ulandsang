@@ -25,7 +25,24 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Last in the list so it runs after the session and user are available.
+    # See Core/middleware.py.
+    "Core.middleware.VisitorTrackingMiddleware",
 ]
+
+# ---- Visitor statistics (Core/middleware.py + the admin Analytics page) ----
+
+# Record page views on the public site.
+VISITOR_TRACKING_ENABLED = True
+
+# Raw page views older than this are removed by `manage.py prune_visits`.
+# The per-day totals in DailyVisitor are kept regardless.
+VISITOR_RETENTION_DAYS = 180
+
+# A reverse proxy that does not set X-Forwarded-For makes every visitor look
+# like the proxy, so hashing stays on REMOTE_ADDR until this is switched on.
+VISITOR_TRACKING_TRUST_PROXY = False
+
 
 ROOT_URLCONF = "me3ulandsang.urls"
 

@@ -1,0 +1,191 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static humanize %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static "admin/css/dashboard.css" %}">
+<style>
+  /* Numeric columns stay narrow without wrapping the header text vertically. */
+  #content-main table th { white-space: nowrap; }
+  #content-main table td { word-break: break-word; }
+</style>{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+{% block nav-breadcrumbs %}{% endblock %}
+{% block nav-sidebar %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Period</h2>
+    <div style="padding:10px 12px;">
+      {% for option in day_options %}
+        {% if option == stats.days %}
+          <strong style="margin-right:12px;">{{ option }} days</strong>
+        {% else %}
+          <a style="margin-right:12px;" href="?days={{ option }}">{{ option }} days</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if not stats.tracking_enabled %}
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Tracking is switched off</h2>
+    <p style="padding:10px 12px;">
+      Set <code>VISITOR_TRACKING_ENABLED = True</code> in settings to start recording visits.
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Headline (last {{ stats.days }} days)</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px;padding:12px;">
+      <div style="padding:12px 14px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:24px;font-weight:600;">{{ stats.views|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Page views</div>
+        <div style="margin-top:4px;">{{ stats.views_change }}</div>
+      </div>
+      <div style="padding:12px 14px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:24px;font-weight:600;">{{ stats.visitors|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Unique visitors</div>
+        <div style="margin-top:4px;">{{ stats.visitors_change }}</div>
+      </div>
+      <div style="padding:12px 14px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:24px;font-weight:600;">{{ stats.views_per_visitor }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Pages per visitor</div>
+      </div>
+      <div style="padding:12px 14px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:24px;font-weight:600;">{{ stats.returning_visitors|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Returning visitors</div>
+        <div class="mini quiet" style="margin-top:4px;">came back on a later day</div>
+      </div>
+      <div style="padding:12px 14px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;">
+        <div style="font-size:24px;font-weight:600;">{{ stats.bot_views|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">Crawler hits</div>
+        <div class="mini quiet" style="margin-top:4px;">excluded from the numbers above</div>
+      </div>
+    </div>
+    <p class="mini quiet" style="padding:0 12px 12px;">
+      Comparison is against the {{ stats.days }} days before this window. Visits are stored as a salted hash,
+      never as an IP address.
+    </p>
+  </div>
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Views and visitors per day</h2>
+    {% if stats.daily %}
+    <div style="display:flex;align-items:flex-end;gap:3px;height:170px;padding:12px;overflow-x:auto;">
+      {% for row in stats.daily %}
+      <div style="flex:1 0 10px;text-align:center;" title="{{ row.date|date:'M j' }}: {{ row.views|default:0 }} views, {{ row.visitors }} visitors">
+        <div style="height:120px;display:flex;align-items:flex-end;">
+          <div style="width:100%;height:{{ row.height }}%;min-height:2px;background:#79aec8;border-radius:2px 2px 0 0;"></div>
+        </div>
+        <div class="mini quiet" style="margin-top:4px;writing-mode:vertical-rl;font-size:9px;">{{ row.date|date:"M j" }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    <table style="width:100%;">
+      <thead><tr><th>Day</th><th>Views</th><th>Unique visitors</th></tr></thead>
+      <tbody>
+        {% for row in stats.daily reversed %}
+        <tr>
+          <td>{{ row.date|date:"D, M j Y" }}</td>
+          <td>{{ row.views|default:0|intcomma }}</td>
+          <td>{{ row.visitors|intcomma }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="padding:12px;" class="quiet">No visits recorded yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Most viewed pages</h2>
+    <table style="width:100%;">
+      <thead><tr><th>Page</th><th>Views</th><th>Unique visitors</th></tr></thead>
+      <tbody>
+        {% for page in stats.top_pages %}
+        <tr>
+          <td><a href="{{ page.path }}">{{ page.path }}</a></td>
+          <td>{{ page.views|intcomma }}</td>
+          <td>{{ page.visitors|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="quiet">Nothing recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;">
+    <div class="module" style="margin-bottom:20px;">
+      <h2>Where visitors come from</h2>
+      <table style="width:100%;">
+        <tbody>
+          {% for row in stats.top_referrers %}
+          <tr><td>{{ row.label }}</td><td style="text-align:right;">{{ row.count|intcomma }}</td></tr>
+          {% empty %}
+          <tr><td class="quiet">Nothing recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="module" style="margin-bottom:20px;">
+      <h2>Devices</h2>
+      <table style="width:100%;">
+        <tbody>
+          {% for row in stats.devices %}
+          <tr><td style="text-transform:capitalize;">{{ row.device }}</td><td style="text-align:right;">{{ row.count|intcomma }}</td></tr>
+          {% empty %}
+          <tr><td class="quiet">Nothing recorded yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Most played tracks (all time counters)</h2>
+    <table style="width:100%;">
+      <thead><tr><th>Track</th><th>Views</th><th>Likes</th></tr></thead>
+      <tbody>
+        {% for track in stats.top_tracks %}
+        <tr>
+          <td><a href="{{ track.url }}">{{ track.name }}</a></td>
+          <td>{{ track.views|intcomma }}</td>
+          <td>{{ track.likes|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="quiet">No tracks yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Latest 25 page views</h2>
+    <table style="width:100%;">
+      <thead><tr><th>When</th><th>Page</th><th>From</th><th>Device</th></tr></thead>
+      <tbody>
+        {% for visit in stats.latest %}
+        <tr>
+          <td style="white-space:nowrap;">{{ visit.created_at|date:"M j, H:i" }}</td>
+          <td>{{ visit.path }}</td>
+          <td>{% if visit.referrer %}{{ visit.referrer|truncatechars:60 }}{% else %}<span class="quiet">direct</span>{% endif %}</td>
+          <td>{{ visit.device }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="quiet">Nothing recorded yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="mini quiet" style="padding:0 12px 12px;">
+      Raw page views older than {{ stats.retention_days }} days are removed by
+      <code>manage.py prune_visits</code>; the daily totals above are kept.
+    </p>
+  </div>
+
+</div>
+{% endblock %}

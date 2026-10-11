@@ -14,6 +14,16 @@
 {% block content %}
 <div id="content-main">
 
+  {% if not stats %}
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Visitor statistics are not available</h2>
+    <p style="padding:10px 12px;">
+      The tracking tables could not be read. Run <code>python manage.py migrate</code> on the
+      server (migration <code>Core.0017_dailyvisitor_visit</code>) and reload this page.
+    </p>
+  </div>
+  {% else %}
+
   <div class="module" style="margin-bottom:20px;">
     <h2>Period</h2>
     <div style="padding:10px 12px;">
@@ -186,6 +196,8 @@
       <code>manage.py prune_visits</code>; the daily totals above are kept.
     </p>
   </div>
+
+  {% endif %}
 
 </div>
 {% endblock %}

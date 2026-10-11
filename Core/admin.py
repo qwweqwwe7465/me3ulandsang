@@ -63,13 +63,37 @@ EMPTY_THUMB = (
 # Shared display helpers
 # --------------------------------------------------------------------------- #
 
+_storage_url_warned = False
+
+
+def storage_url(file_field):
+    """URL for a FileField, or None when storage cannot produce one.
+
+    ``.url`` is not always safe: with the S3 backend and missing credentials or
+    bucket settings it raises from boto3 (for example ``ValueError: Required
+    parameter name not set``), which would otherwise turn every admin page that
+    previews artwork into a 500.
+    """
+    global _storage_url_warned
+    if not file_field:
+        return None
+    try:
+        return file_field.url
+    except Exception:  # noqa: BLE001 - storage misconfiguration must not break the admin
+        if not _storage_url_warned:
+            _storage_url_warned = True
+            logger.warning(
+                "Storage could not build a file URL; previews will show placeholders. "
+                "Check the bucket and credential settings.",
+                exc_info=True,
+            )
+        return None
+
+
 def thumbnail(image, size=THUMB_SIZE, missing_label="image not found in storage"):
     """Inline preview for an ImageField, safe to use in list and detail pages."""
-    if not image:
-        return format_html(EMPTY_THUMB, size=size)
-    try:
-        url = image.url
-    except ValueError:
+    url = storage_url(image)
+    if not url:
         return format_html(EMPTY_THUMB, size=size)
     return format_html(
         '<img class="core-thumb" src="{}" alt="" title="{}" width="{}" height="{}"'
@@ -83,12 +107,9 @@ def thumbnail(image, size=THUMB_SIZE, missing_label="image not found in storage"
 
 def audio_player(audio, width=320):
     """Small HTML5 player, so an uploaded track can be checked without downloading it."""
-    if not audio:
-        return mark_safe('<span style="color:#ba2121;">No audio file uploaded</span>')
-    try:
-        url = audio.url
-    except ValueError:
-        return mark_safe('<span style="color:#ba2121;">No audio file uploaded</span>')
+    url = storage_url(audio)
+    if not url:
+        return mark_safe('<span style="color:#ba2121;">No audio file available</span>')
     return format_html(
         '<audio controls preload="none" style="max-width:{}px;height:32px;" src="{}">'
         '<a href="{}">{}</a></audio>',
@@ -788,9 +809,21 @@ def _pct_change_display(current, previous):
 
 
 def _traffic_snapshot(days=7):
-    """Headline visitor numbers for the dashboard strip."""
+    """Headline visitor numbers for the dashboard strip.
+
+    Returns None when the tracking tables are not there yet (the migration has
+    not been applied, or it failed), so the rest of the dashboard still renders.
+    """
     if not getattr(settings, "VISITOR_TRACKING_ENABLED", True):
         return None
+    try:
+        return _traffic_snapshot_queries(days)
+    except Exception:  # noqa: BLE001 - statistics must never break the admin
+        logger.warning("Visitor statistics unavailable", exc_info=True)
+        return None
+
+
+def _traffic_snapshot_queries(days):
     today = timezone.localdate()
     start = today - timedelta(days=days - 1)
 
@@ -978,11 +1011,16 @@ class CatalogueAdminSite(admin.AdminSite):
         except (TypeError, ValueError):
             days = 30
         days = max(1, min(days, 365))
+        try:
+            stats = traffic_statistics(request, days=days)
+        except Exception:  # noqa: BLE001 - a missing table must not 500 the page
+            logger.warning("Visitor analytics unavailable", exc_info=True)
+            stats = None
         context = {
             **self.each_context(request),
             "title": "Visitor analytics",
             "subtitle": f"last {days} days",
-            "stats": traffic_statistics(request, days=days),
+            "stats": stats,
             "day_options": [7, 30, 90, 365],
         }
         return TemplateResponse(request, "admin/analytics.html", context)

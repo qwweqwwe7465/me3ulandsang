@@ -29,6 +29,9 @@ static_src/static_src
 Thumbs.db
 *.swp
 
-passenger_wsgi.py
+# Local scratch and generated import artifacts
+# (library_manifest.json, artist_photos_report.json, worksheets, probe scripts)
+tmp/
+
 passenger_wsgi.py
 

@@ -1,0 +1,25 @@
+/* Preview images and placeholders used by the Core admin. */
+
+img.core-thumb {
+  display: inline-block;
+  object-fit: cover;
+  border: 1px solid var(--hairline-color, #ddd);
+  border-radius: 4px;
+  vertical-align: middle;
+  background: var(--body-quiet-color, #999);
+}
+
+/* An <img> that failed to load keeps its box; make it a labelled placeholder
+   instead of showing the browser's broken-image icon. */
+img.core-thumb[data-missing] {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(128, 128, 128, 0.25) 6px,
+    rgba(128, 128, 128, 0.25) 12px
+  );
+  border-style: dashed;
+  color: transparent;
+  font-size: 0;
+}

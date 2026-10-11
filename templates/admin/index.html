@@ -1,0 +1,133 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static humanize %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static "admin/css/dashboard.css" %}">{% endblock %}
+
+{% block coltype %}colMS{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+
+  {% if dashboard %}
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Catalogue at a glance</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:12px;">
+      {% for card in dashboard.cards %}
+      <a href="{{ card.url }}"
+         style="display:block;padding:12px 14px;border:1px solid var(--hairline-color,#e0e0e0);border-radius:8px;text-decoration:none;color:inherit;">
+        <div style="font-size:24px;font-weight:600;line-height:1.2;">{{ card.value|intcomma }}</div>
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.75;">{{ card.label }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Recently added</h2>
+    <table style="width:100%;">
+      <thead>
+        <tr><th>Type</th><th>Name</th><th>Added</th></tr>
+      </thead>
+      <tbody>
+        {% for item in dashboard.recent %}
+        <tr>
+          <td style="white-space:nowrap;">{{ item.kind }}</td>
+          <td><a href="{{ item.url }}">{{ item.name }}</a></td>
+          <td style="white-space:nowrap;">{{ item.date|date:"M j, Y H:i" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="3" class="quiet">Nothing has been added yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Needs attention</h2>
+    <table style="width:100%;">
+      <tbody>
+        {% for check in dashboard.checks %}
+        <tr>
+          <td>{{ check.label }}</td>
+          <td style="white-space:nowrap;text-align:right;">
+            {% if check.count %}
+              <a href="{{ check.url }}"><strong>{{ check.count }}</strong></a>
+            {% else %}
+              <span class="quiet">0</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="module" style="margin-bottom:20px;">
+    <h2>Most popular</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;padding:12px;">
+      <div>
+        <h3 style="margin-top:0;">Top tracks by views</h3>
+        <ol style="margin:0;padding-left:20px;">
+          {% for track in dashboard.top_tracks %}
+          <li><a href="{{ track.url }}">{{ track.name }}</a> <span class="mini quiet">{{ track.views|intcomma }} views &middot; {{ track.likes|intcomma }} likes</span></li>
+          {% empty %}
+          <li class="quiet">No tracks yet.</li>
+          {% endfor %}
+        </ol>
+      </div>
+      <div>
+        <h3 style="margin-top:0;">Top artists by views</h3>
+        <ol style="margin:0;padding-left:20px;">
+          {% for artist in dashboard.top_artists %}
+          <li><a href="{{ artist.url }}">{{ artist.name }}</a> <span class="mini quiet">{{ artist.views|intcomma }} views &middot; {{ artist.likes|intcomma }} likes</span></li>
+          {% empty %}
+          <li class="quiet">No artists yet.</li>
+          {% endfor %}
+        </ol>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module" id="recent-actions-module">
+        <h2>{% translate 'Recent actions' %}</h2>
+        <h3>{% translate 'My actions' %}</h3>
+            {% load log %}
+            {% get_admin_log 10 as admin_log for_user user %}
+            {% if not admin_log %}
+            <p>{% translate 'None available' %}</p>
+            {% else %}
+            <ul class="actionlist">
+            {% for entry in admin_log %}
+            <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+                <span class="visually-hidden">{% if entry.is_addition %}{% translate 'Added:' %}{% elif entry.is_change %}{% translate 'Changed:' %}{% elif entry.is_deletion %}{% translate 'Deleted:' %}{% endif %}</span>
+                {% if entry.is_deletion or not entry.get_admin_url %}
+                    {{ entry.object_repr }}
+                {% else %}
+                    <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                {% endif %}
+                <br>
+                {% if entry.content_type %}
+                    <span class="mini quiet">{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}</span>
+                {% else %}
+                    <span class="mini quiet">{% translate 'Unknown content' %}</span>
+                {% endif %}
+            </li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+    </div>
+</div>
+{% endblock %}

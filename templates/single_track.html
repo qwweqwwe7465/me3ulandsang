@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+f{% extends "base.html" %}
 {% load static %}
 {% block content %}
 {% load humanize %}
@@ -25,7 +25,7 @@
     <div class="track-cover-large"><img class="track-cover-large" src='{{track.cover.url}}'></div>
     <div>
       {% if album %}
-      <a href="#" class="track-album-link">
+      <a href="/album/{{album.id}}" class="track-album-link">
         <span class="track-album-thumb" style="background:linear-gradient(135deg,var(--scarlet),var(--maroon));"></span>
         <span class="eyebrow">FROM THE ALBUM: {{ album.name }}</span>
       </a>

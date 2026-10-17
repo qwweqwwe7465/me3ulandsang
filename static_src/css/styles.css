@@ -118,11 +118,28 @@
   @media (max-width:900px){ .hero{ grid-template-columns:1fr; padding-top:52px; } .cover-collage{ max-width:340px; } }
 
   /* ---------- feature strip ---------- */
-  .feature-strip{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding:8px 0 56px; }
-  .feature-pill{ display:flex; align-items:center; gap:12px; border-radius:999px; padding:14px 20px; }
-  .feature-pill svg{ flex-shrink:0; color:var(--violet-soft); }
-  .feature-pill span{ font-size:13.5px; font-weight:600; }
-  @media (max-width:760px){ .feature-strip{ grid-template-columns:1fr; } }
+  /* These are statements, not controls: no box, no fill, no pill radius.
+     A gradient rule runs down the LEFT of each icon + text block, which reads
+     as editorial marking rather than a control. */
+  .feature-strip{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; padding:8px 0 56px; }
+  .feature-item{ position:relative; padding-left:20px; padding-right:34px; min-width:0; }
+  .feature-item::before{ content:''; position:absolute; left:0; top:1px; bottom:1px; width:3px;
+    border-radius:2px; background:linear-gradient(180deg,var(--violet),var(--teal)); }
+  .feature-item svg{ display:block; flex-shrink:0; color:var(--violet-soft); opacity:.85; margin-bottom:10px; }
+  .feature-item span{ display:block; font-size:15px; line-height:1.45; font-weight:500;
+    color:var(--text-0); max-width:230px; }
+  .feature-item + .feature-item{ padding-left:54px; }
+  .feature-item + .feature-item::before{ left:34px; }
+  @media (max-width:760px){
+    .feature-strip{ grid-template-columns:1fr; gap:30px; }
+    .feature-item{ padding-right:0; }
+    .feature-item + .feature-item{ padding-left:20px; }
+    /* The divider sits in the gap between items, so the red rule still starts
+       level with the icon instead of at the line. */
+    .feature-item + .feature-item::after{ content:''; position:absolute; left:0; right:0;
+      top:-15px; height:1px; background:var(--glass-border); }
+    .feature-item + .feature-item::before{ left:0; }
+  }
 
   /* ---------- stats ---------- */
   .stats{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; padding:8px 0 72px; }

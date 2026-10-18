@@ -127,8 +127,24 @@ def commons_name(url: str) -> str:
     return urllib.parse.unquote(match.group(1)) if match else ""
 
 
+# File names scraped from music sites often carry junk after the artist name,
+# e.g. "Majid Kharatha @RozMusic.com", "Ahmagh Man Oghdeyim ~ UpMusic",
+# "Siyavash Ghomeyshi [BibakMusic.com]". Searching the raw tag never matches.
+_SITE_SUFFIX = re.compile(r"\s*[@~|]\s*[^\s]+.*$")
+_BRACKETED = re.compile(r"[\(\[]([^)\]]*)[)\]]")
+
+
+def search_name(name: str) -> str:
+    """The artist name with download-site decoration stripped off."""
+    cleaned = _BRACKETED.sub(" ", name or "")
+    cleaned = _SITE_SUFFIX.sub("", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip(" -_.,/")
+    return cleaned or (name or "")
+
+
 def wikipedia_image(name: str) -> dict:
     """Resolve a validated Wikipedia image. Returns status found/none/error."""
+    name = search_name(name)
     languages = ["en"] + (["fa"] if is_non_latin(name) else [])
     wanted = norm(name)
     searches_ok = 0
@@ -203,6 +219,7 @@ def wikipedia_image(name: str) -> dict:
 
 def itunes_artwork(name: str) -> dict:
     """Resolve the artist's album art. Returns status found/none/error."""
+    name = search_name(name)
     try:
         payload = itunes_fetch(
             "https://itunes.apple.com/search?entity=album&limit=10&term=" + urllib.parse.quote(name)

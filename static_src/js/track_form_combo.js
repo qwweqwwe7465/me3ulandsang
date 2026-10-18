@@ -1,4 +1,4 @@
-﻿// Searchable artist / album picker.
+// Searchable artist / album picker.
 // Reads the full lists from json_script tags (id="artist-data", id="album-data")
 // rendered by the server, then does the filtering client-side.
 //
@@ -38,8 +38,11 @@
     var name = root.dataset.combo;
     var input = root.querySelector('.combo__input');
     var hidden = root.querySelector('.combo__value');
+    var nameField = root.querySelector('.combo__name');
     var panel = root.querySelector('.combo__panel');
     var items = datasets[name] || [];
+    // Only the artist and album can be created from the upload page.
+    var canCreate = !!nameField;
 
     var initialId = root.dataset.initial;
     if (initialId) {
@@ -47,13 +50,41 @@
       if (match) input.value = match.name;
     }
 
-    function renderPanel(list) {
+    function syncName() {
+      if (!nameField) return;
+      // Only meaningful while nothing is selected.
+      nameField.value = hidden.value ? '' : input.value.trim();
+    }
+
+    function renderPanel(list, query) {
       panel.innerHTML = '';
+      var q = (query || '').trim();
+      var hasExact = items.some(function (item) {
+        return item.name.toLowerCase() === q.toLowerCase();
+      });
+
+      // Offer to create the typed name when it matches nothing.
+      if (canCreate && q && !hasExact) {
+        var create = document.createElement('button');
+        create.type = 'button';
+        create.className = 'combo__option combo__option--create';
+        create.textContent = 'Create "' + q + '"';
+        create.addEventListener('click', function () {
+          input.value = q;
+          hidden.value = '';
+          if (nameField) nameField.value = q;
+          closePanel();
+        });
+        panel.appendChild(create);
+      }
+
       if (list.length === 0) {
-        var empty = document.createElement('div');
-        empty.className = 'combo__empty';
-        empty.textContent = 'No matches.';
-        panel.appendChild(empty);
+        if (!(canCreate && q && !hasExact)) {
+          var empty = document.createElement('div');
+          empty.className = 'combo__empty';
+          empty.textContent = 'No matches.';
+          panel.appendChild(empty);
+        }
       } else {
         list.forEach(function (item) {
           var opt = document.createElement('button');
@@ -63,6 +94,7 @@
           opt.addEventListener('click', function () {
             input.value = item.name;
             hidden.value = item.id;
+            if (nameField) nameField.value = '';
             closePanel();
           });
           panel.appendChild(opt);
@@ -76,11 +108,12 @@
     }
 
     input.addEventListener('focus', function () {
-      renderPanel(filterItems(items, input.value));
+      renderPanel(filterItems(items, input.value), input.value);
     });
     input.addEventListener('input', function () {
       hidden.value = '';
-      renderPanel(filterItems(items, input.value));
+      syncName();
+      renderPanel(filterItems(items, input.value), input.value);
     });
     document.addEventListener('click', function (e) {
       if (!root.contains(e.target)) closePanel();
@@ -94,6 +127,9 @@
     var chipsWrap = root.querySelector('.combo__chips');
     var items = datasets[name] || [];
     var selected = [];
+    // Names typed here that do not exist yet; posted as <name>_name and created
+    // on save, exactly like the single-artist box.
+    var pendingNames = [];
 
     var initialIds = (root.dataset.initial || '')
       .split(',')
@@ -101,6 +137,21 @@
       .filter(Boolean);
     if (initialIds.length) {
       selected = items.filter(function (item) { return initialIds.indexOf(String(item.id)) !== -1; });
+    }
+
+    try {
+      var initialNames = JSON.parse(root.dataset.initialNames || '[]');
+      if (Array.isArray(initialNames)) pendingNames = initialNames.filter(Boolean);
+    } catch (e) {
+      pendingNames = [];
+    }
+
+    function hasName(candidate) {
+      var c = candidate.trim().toLowerCase();
+      return (
+        pendingNames.some(function (n) { return n.toLowerCase() === c; }) ||
+        selected.some(function (s) { return s.name.toLowerCase() === c; })
+      );
     }
 
     function renderChips() {
@@ -129,15 +180,61 @@
         chipsWrap.appendChild(chip);
         chipsWrap.appendChild(hidden);
       });
+
+      pendingNames.forEach(function (pendingName) {
+        var chip = document.createElement('span');
+        chip.className = 'combo__chip combo__chip--new';
+        chip.textContent = pendingName;
+
+        var remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'combo__chip-remove';
+        remove.setAttribute('aria-label', 'Remove ' + pendingName);
+        remove.textContent = 'x';
+        remove.addEventListener('click', function () {
+          pendingNames = pendingNames.filter(function (n) { return n !== pendingName; });
+          renderChips();
+        });
+
+        var hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = name + '_name';
+        hidden.value = pendingName;
+
+        chip.appendChild(remove);
+        chipsWrap.appendChild(chip);
+        chipsWrap.appendChild(hidden);
+      });
     }
 
-    function renderPanel(list) {
+    function renderPanel(list, query) {
       panel.innerHTML = '';
+      var q = (query || '').trim();
+      var hasExact = items.some(function (item) {
+        return item.name.toLowerCase() === q.toLowerCase();
+      });
+
+      if (q && !hasExact && !hasName(q)) {
+        var create = document.createElement('button');
+        create.type = 'button';
+        create.className = 'combo__option combo__option--create';
+        create.textContent = 'Create "' + q + '"';
+        create.addEventListener('click', function () {
+          pendingNames.push(q);
+          input.value = '';
+          renderChips();
+          closePanel();
+        });
+        panel.appendChild(create);
+      }
+
       if (list.length === 0) {
-        var empty = document.createElement('div');
-        empty.className = 'combo__empty';
-        empty.textContent = 'No matches.';
-        panel.appendChild(empty);
+        if (!(q && !hasExact && !hasName(q))) {
+          var empty = document.createElement('div');
+          empty.className = 'combo__empty';
+          empty.textContent = 'No matches.';
+          panel.appendChild(empty);
+        }
       } else {
         list.forEach(function (item) {
           var opt = document.createElement('button');
@@ -146,9 +243,13 @@
           opt.textContent = item.name;
           opt.addEventListener('click', function () {
             selected.push(item);
+            // Picking the real record replaces any same-named pending entry.
+            pendingNames = pendingNames.filter(function (n) {
+              return n.toLowerCase() !== item.name.toLowerCase();
+            });
             renderChips();
             input.value = '';
-            renderPanel(filterItems(items, '', selected.map(function (s) { return s.id; })));
+            renderPanel(filterItems(items, '', selected.map(function (s) { return s.id; })), '');
           });
           panel.appendChild(opt);
         });
@@ -161,10 +262,10 @@
     }
 
     input.addEventListener('focus', function () {
-      renderPanel(filterItems(items, input.value, selected.map(function (s) { return s.id; })));
+      renderPanel(filterItems(items, input.value, selected.map(function (s) { return s.id; })), input.value);
     });
     input.addEventListener('input', function () {
-      renderPanel(filterItems(items, input.value, selected.map(function (s) { return s.id; })));
+      renderPanel(filterItems(items, input.value, selected.map(function (s) { return s.id; })), input.value);
     });
     document.addEventListener('click', function (e) {
       if (!root.contains(e.target)) closePanel();
@@ -293,19 +394,23 @@ function fillCombo(comboName, extractedName) {
 
   const visibleInput = root.querySelector('.combo__input');
   const hiddenInput = root.querySelector('.combo__value');
+  const nameInput = root.querySelector('.combo__name');
   const items = datasets[comboName] || [];
+  const cleaned = String(extractedName).trim();
 
   // try to find an exact (case-insensitive) match already in the database
-  const match = items.find(item => item.name.toLowerCase() === extractedName.toLowerCase());
+  const match = items.find(item => item.name.toLowerCase() === cleaned.toLowerCase());
 
   if (match) {
     visibleInput.value = match.name;
     hiddenInput.value = match.id;
+    if (nameInput) nameInput.value = '';
   } else {
-    // no match in the database yet — just show the extracted name as text,
-    // the user will need to add this artist/album first
-    visibleInput.value = extractedName;
+    // Not in the database yet: show the extracted name AND hand it to the
+    // server through the hidden name field, so it is created on save.
+    visibleInput.value = cleaned;
     hiddenInput.value = '';
+    if (nameInput) nameInput.value = cleaned;
   }
 }
 

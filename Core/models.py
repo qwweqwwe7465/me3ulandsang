@@ -6,8 +6,13 @@ from django.utils import timezone
 
 # Create your models here.
 
+# Text limits. 255 is the widest that fits a MySQL/SQLite indexed column
+# comfortably while still never chopping a real song, artist or album name.
+TITLE_MAX_LENGTH = 255
+
+
 class Genre(models.Model):
-    name=models.CharField(max_length=225)  
+    name=models.CharField(max_length=TITLE_MAX_LENGTH)  
     def __str__(self):
         return self.name
 
@@ -16,7 +21,7 @@ class Genre(models.Model):
         return self.rel_track.order_by('-likes').first()
 
 class Artist(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=TITLE_MAX_LENGTH)
     description= models.TextField(blank=1)
     genres = models.ManyToManyField(Genre,related_name='rel_artist')
     def __str__(self):
@@ -27,7 +32,7 @@ class Artist(models.Model):
 
 
 class Track(models.Model):
-    title = models.CharField(max_length=50)
+    title = models.CharField(max_length=TITLE_MAX_LENGTH)
     featured_artist=models.ManyToManyField(Artist,related_name='featured_tracks',blank=1)
     artist = models.ForeignKey(on_delete=models.CASCADE,to=Artist,related_name='tracks',null=1,blank=1)
     #album
@@ -52,7 +57,7 @@ class Track(models.Model):
     
 
 class Album(models.Model):
-    name=models.CharField(max_length=100)
+    name = models.CharField(max_length=TITLE_MAX_LENGTH)
     description=models.TextField(blank=1)
     release_date = models.DateTimeField(null=1,blank=1,default=timezone.now)
     date_added = models.DateTimeField(auto_now_add=True)
@@ -74,7 +79,7 @@ class Album_track_relation(models.Model):
 
 
 class Playlist(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=TITLE_MAX_LENGTH)
     description=models.TextField(blank=1)
     date_added = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -103,7 +108,7 @@ class Playlist_track_relation(models.Model):
 
 
 class Feedback(models.Model):
-    name= models.CharField(max_length=100,blank=1)
+    name = models.CharField(max_length=TITLE_MAX_LENGTH, blank=1)
     description=models.TextField()
     email= models.EmailField(max_length=254,blank=1)
     def __str__(self):

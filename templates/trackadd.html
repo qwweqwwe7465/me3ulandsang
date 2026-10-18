@@ -87,11 +87,12 @@
             <div class="field">
               <label class="field__label" for="artist-search">Primary artist</label>
               <div class="combo" data-combo="artist" data-multi="false" data-initial="{{ initial_artist_id|default:'' }}">
-                <input type="text" class="combo__input" id="artist-search" placeholder="Type to search artists..." autocomplete="off">
+                <input type="text" class="combo__input" id="artist-search" placeholder="Search, or type a new artist name" autocomplete="off" value="{{ initial_artist_name|default:'' }}">
                 <input type="hidden" name="artist" class="combo__value" value="{{ initial_artist_id|default:'' }}">
+                <input type="hidden" name="artist_name" class="combo__name" value="{{ initial_artist_name|default:'' }}">
                 <div class="combo__panel" hidden></div>
               </div>
-              <p class="field__hint">Not in the list yet? Add the artist first, then come back.</p>
+              <p class="field__hint">Pick a name from the list, or type a new one — it is created on save, with a photo pulled from Wikipedia.</p>
             </div>
             <div class="field">
               <label class="field__label" for="id_release_date">Release date</label>
@@ -101,12 +102,12 @@
 
           <div class="field">
             <label class="field__label" for="featured-search">Featured artists</label>
-            <div class="combo" data-combo="featured_artist" data-multi="true" data-initial="{{ initial_featured_ids }}">
+            <div class="combo" data-combo="featured_artist" data-multi="true" data-initial="{{ initial_featured_ids }}" data-initial-names="{{ initial_featured_names|default:'[]' }}">
               <div class="combo__chips" id="featured_artist-chips"></div>
-              <input type="text" class="combo__input" id="featured-search" placeholder="Type to search and add..." autocomplete="off">
+              <input type="text" class="combo__input" id="featured-search" placeholder="Search, or type a new name to create" autocomplete="off">
               <div class="combo__panel" hidden></div>
             </div>
-            <p class="field__hint">Pick as many as apply. Leave empty if there are none.</p>
+            <p class="field__hint">Pick as many as apply, or type a new name — new featured artists are created on save.</p>
           </div>
 
           <div class="field">
@@ -135,11 +136,12 @@
             <div class="field">
               <label class="field__label" for="album-search">Album</label>
               <div class="combo" data-combo="album" data-multi="false" data-initial="{{ initial_album_id|default:'' }}">
-                <input type="text" class="combo__input" id="album-search" placeholder="Type to search albums..." autocomplete="off">
+                <input type="text" class="combo__input" id="album-search" placeholder="Search, or type a new album name" autocomplete="off" value="{{ initial_album_name|default:'' }}">
                 <input type="hidden" name="album" class="combo__value" value="{{ initial_album_id|default:'' }}">
+                <input type="hidden" name="album_name" class="combo__name" value="{{ initial_album_name|default:'' }}">
                 <div class="combo__panel" hidden></div>
               </div>
-              <p class="field__hint">Leave empty for a standalone, non-album track.</p>
+              <p class="field__hint">Type a new name to create the album on save. Leave empty for a standalone track.</p>
             </div>
             <div class="field">
               <label class="field__label" for="id_album_order">Track order in album</label>

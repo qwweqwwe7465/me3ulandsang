@@ -44,6 +44,15 @@
 }
 .combo__option:hover{ background:rgba(255,59,59,0.14); }
 
+/* "Create <name>" row offered when the typed name matches nothing. */
+.combo__option--create{
+  color:var(--violet-soft);
+  font-weight:600;
+  border-bottom:1px solid var(--glass-border);
+  margin-bottom:4px;
+}
+.combo__option--create::before{ content:'+ '; }
+
 .combo__empty{
   padding:9px 12px;
   font-size:13px;
@@ -84,6 +93,15 @@
   line-height:1;
 }
 .combo__chip-remove:hover{ background:rgba(255,59,59,0.4); }
+
+/* A typed name that is not in the database yet — created when the form saves. */
+.combo__chip--new{
+  background:rgba(255,255,255,0.05);
+  border-style:dashed;
+  border-color:var(--glass-border-strong);
+  color:var(--text-1);
+}
+.combo__chip--new::before{ content:'+'; color:var(--violet-soft); font-weight:700; }
 
 .genre-checks{
   display:flex;
